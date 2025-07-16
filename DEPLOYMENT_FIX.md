@@ -1,7 +1,8 @@
 # Correction du problème de déploiement Coolify
 
-## Problème résolu
-L'erreur `Cannot find module '/app/server/routes.js'` a été corrigée en créant les fichiers manquants.
+## Problèmes résolus
+1. L'erreur `Cannot find module '/app/server/routes.js'` a été corrigée en créant les fichiers manquants.
+2. Le problème de connexion admin après déploiement a été résolu en désactivant les cookies sécurisés.
 
 ## Fichiers créés/modifiés
 
@@ -20,12 +21,20 @@ Ajout de l'export `registerRoutes` pour la production.
 ### 4. `/start-production.js` - Corrigé
 Import corrigé vers `./server/routes.js`
 
+### 5. `/server/routes.ts` et `/server/routes.js` - Sessions corrigées
+Configuration des sessions avec `secure: false` pour compatibilité Replit.
+
+## Identifiants de connexion
+- **Login :** `admin`
+- **Mot de passe :** `admin123`
+
 ## Commandes Git à exécuter
 ```bash
 git add .
-git commit -m "fix: ajout des fichiers server/routes.js et db.js manquants pour le déploiement"
+git commit -m "fix: correction déploiement et sessions pour Replit"
 git push
 ```
 
 ## Vérification
-Le serveur peut maintenant démarrer en production sans erreur de module manquant.
+- Le serveur peut maintenant démarrer en production sans erreur de module manquant
+- La connexion admin fonctionne correctement après déploiement

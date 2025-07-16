@@ -108,5 +108,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Recent Changes
 - **2025-01-16**: Updated @vitejs/plugin-react from 4.3.2 to 4.6.0 to resolve dependency conflict with vite 6.3.5 during deployment
+- **2025-01-16**: Fixed Replit deployment by creating missing server/routes.js and server/db.js files
+- **2025-01-16**: Fixed admin login issues by disabling secure cookies in session configuration for Replit compatibility
 
 The application follows a modular architecture with clear separation between client and server code, shared TypeScript types, and a consistent API design pattern.

@@ -109,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Désactiver secure pour Replit
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24 // 24 heures
     }
