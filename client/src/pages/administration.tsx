@@ -9,7 +9,8 @@ import {
   UserCheck,
   AlertCircle,
   Crown,
-  Eye
+  Eye,
+  Plus
 } from "lucide-react";
 import { Layout } from "@/components/layout/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +24,7 @@ import {
   DialogTrigger,
   DialogClose
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Select,
   SelectContent,
@@ -48,6 +50,7 @@ interface UserStats {
 
 export default function AdministrationPage() {
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
+  const [createUserType, setCreateUserType] = useState<"agent" | "superviseur" | "admin">("agent");
   const [newUser, setNewUser] = useState({
     username: "",
     email: "",
@@ -139,7 +142,20 @@ export default function AdministrationPage() {
   const canDeleteUser = currentUser?.role === 'admin' || currentUser?.role === 'superviseur';
 
   const handleCreateUser = () => {
-    createUserMutation.mutate(newUser);
+    createUserMutation.mutate({...newUser, role: createUserType});
+  };
+
+  const openCreateUserModal = (userType: "agent" | "superviseur" | "admin") => {
+    setCreateUserType(userType);
+    setNewUser({
+      username: "",
+      email: "",
+      password: "",
+      nom: "",
+      prenom: "",
+      role: userType
+    });
+    setShowCreateUserModal(true);
   };
 
   const handleDeleteUser = (userId: number) => {
@@ -234,22 +250,121 @@ export default function AdministrationPage() {
         </div>
       )}
 
+      {/* Section de création d'utilisateurs avec onglets */}
+      {canCreateUser && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Créer un nouveau compte</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="agent" className="w-full">
+              <TabsList className={`grid w-full ${currentUser?.role === 'admin' ? 'grid-cols-3' : 'grid-cols-1'}`}>
+                <TabsTrigger value="agent" className="flex items-center gap-2">
+                  <UserCheck className="h-4 w-4" />
+                  Agent
+                </TabsTrigger>
+                {currentUser?.role === 'admin' && (
+                  <TabsTrigger value="superviseur" className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    Superviseur
+                  </TabsTrigger>
+                )}
+                {currentUser?.role === 'admin' && (
+                  <TabsTrigger value="admin" className="flex items-center gap-2">
+                    <Crown className="h-4 w-4" />
+                    Admin
+                  </TabsTrigger>
+                )}
+              </TabsList>
+              
+              <TabsContent value="agent" className="mt-4">
+                <div className="text-center py-6">
+                  <UserCheck className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Créer un compte Agent</h3>
+                  <p className="text-gray-600 mb-4">
+                    Les agents ont accès aux fonctionnalités CRM standard : gestion des clients, devis, documents et appels.
+                  </p>
+                  <Button 
+                    onClick={() => openCreateUserModal("agent")}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Créer un Agent
+                  </Button>
+                </div>
+              </TabsContent>
+              
+              {currentUser?.role === 'admin' && (
+                <TabsContent value="superviseur" className="mt-4">
+                  <div className="text-center py-6">
+                    <Shield className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Créer un compte Superviseur</h3>
+                    <p className="text-gray-600 mb-4">
+                      Les superviseurs peuvent gérer les agents et accéder à la page d'administration.
+                      <br />
+                      <span className="text-sm text-orange-600 font-medium">
+                        Limite : 4 superviseurs maximum
+                      </span>
+                    </p>
+                    <Button 
+                      onClick={() => openCreateUserModal("superviseur")}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Créer un Superviseur
+                    </Button>
+                  </div>
+                </TabsContent>
+              )}
+              
+              {currentUser?.role === 'admin' && (
+                <TabsContent value="admin" className="mt-4">
+                  <div className="text-center py-6">
+                    <Crown className="h-16 w-16 text-red-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Créer un compte Admin</h3>
+                    <p className="text-gray-600 mb-4">
+                      Les administrateurs ont un accès total au système et peuvent gérer tous les utilisateurs.
+                      <br />
+                      <span className="text-sm text-red-600 font-medium">
+                        Attention : Pouvoir total sur le système
+                      </span>
+                    </p>
+                    <Button 
+                      onClick={() => openCreateUserModal("admin")}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Créer un Admin
+                    </Button>
+                  </div>
+                </TabsContent>
+              )}
+            </Tabs>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Liste des utilisateurs */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Gestion des utilisateurs</CardTitle>
+            <CardTitle>Liste des utilisateurs</CardTitle>
             {canCreateUser && (
               <Dialog open={showCreateUserModal} onOpenChange={setShowCreateUserModal}>
                 <DialogTrigger asChild>
-                  <Button className="bg-primary hover:bg-blue-600">
+                  <Button variant="outline" className="hidden">
                     <UserPlus className="h-4 w-4 mr-2" />
                     Nouvel utilisateur
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Créer un nouvel utilisateur</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2">
+                      {createUserType === 'agent' && <UserCheck className="h-5 w-5 text-green-500" />}
+                      {createUserType === 'superviseur' && <Shield className="h-5 w-5 text-blue-500" />}
+                      {createUserType === 'admin' && <Crown className="h-5 w-5 text-red-500" />}
+                      Créer un compte {createUserType === 'agent' ? 'Agent' : createUserType === 'superviseur' ? 'Superviseur' : 'Admin'}
+                    </DialogTitle>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -261,6 +376,7 @@ export default function AdministrationPage() {
                         value={newUser.username}
                         onChange={(e) => setNewUser({...newUser, username: e.target.value})}
                         className="col-span-3"
+                        placeholder={`ex: ${createUserType}1`}
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -273,6 +389,7 @@ export default function AdministrationPage() {
                         value={newUser.email}
                         onChange={(e) => setNewUser({...newUser, email: e.target.value})}
                         className="col-span-3"
+                        placeholder={`${createUserType}1@crm.com`}
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -285,6 +402,7 @@ export default function AdministrationPage() {
                         value={newUser.password}
                         onChange={(e) => setNewUser({...newUser, password: e.target.value})}
                         className="col-span-3"
+                        placeholder="Mot de passe sécurisé"
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -296,6 +414,7 @@ export default function AdministrationPage() {
                         value={newUser.nom}
                         onChange={(e) => setNewUser({...newUser, nom: e.target.value})}
                         className="col-span-3"
+                        placeholder="Nom de famille"
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -307,26 +426,33 @@ export default function AdministrationPage() {
                         value={newUser.prenom}
                         onChange={(e) => setNewUser({...newUser, prenom: e.target.value})}
                         className="col-span-3"
+                        placeholder="Prénom"
                       />
                     </div>
+                    
+                    {/* Affichage du rôle sélectionné */}
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="role" className="text-right">
-                        Rôle
-                      </Label>
-                      <Select value={newUser.role} onValueChange={(value) => setNewUser({...newUser, role: value})}>
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Sélectionner un rôle" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="agent">Agent</SelectItem>
-                          {currentUser.role === 'admin' && (
-                            <SelectItem value="superviseur">Superviseur</SelectItem>
-                          )}
-                          {currentUser.role === 'admin' && (
-                            <SelectItem value="admin">Admin</SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
+                      <Label className="text-right">Rôle</Label>
+                      <div className="col-span-3">
+                        {createUserType === 'agent' && (
+                          <Badge className="bg-green-100 text-green-800">
+                            <UserCheck className="h-3 w-3 mr-1" />
+                            Agent
+                          </Badge>
+                        )}
+                        {createUserType === 'superviseur' && (
+                          <Badge className="bg-blue-100 text-blue-800">
+                            <Shield className="h-3 w-3 mr-1" />
+                            Superviseur
+                          </Badge>
+                        )}
+                        {createUserType === 'admin' && (
+                          <Badge className="bg-red-100 text-red-800">
+                            <Crown className="h-3 w-3 mr-1" />
+                            Admin
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex justify-end space-x-2">
