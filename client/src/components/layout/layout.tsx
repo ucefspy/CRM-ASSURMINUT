@@ -1,8 +1,9 @@
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
+import { useState, useEffect } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,6 +12,8 @@ interface LayoutProps {
 }
 
 export function Layout({ children, title, onNewClient }: LayoutProps) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
   const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
 
@@ -19,6 +22,14 @@ export function Layout({ children, title, onNewClient }: LayoutProps) {
       setLocation("/login");
     }
   }, [user, isLoading, setLocation]);
+
+  const handleMenuClick = () => {
+    setSidebarOpen(true);
+  };
+
+  const handleSidebarClose = () => {
+    setSidebarOpen(false);
+  };
 
   if (isLoading) {
     return (
@@ -37,9 +48,18 @@ export function Layout({ children, title, onNewClient }: LayoutProps) {
 
   return (
     <div className="flex h-screen bg-slate-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header title={title} onNewClient={onNewClient} />
+      <Sidebar 
+        isOpen={isMobile ? sidebarOpen : true}
+        onClose={handleSidebarClose}
+      />
+      
+      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
+        <Header 
+          title={title} 
+          onNewClient={onNewClient}
+          onMenuClick={handleMenuClick}
+        />
+        
         <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>

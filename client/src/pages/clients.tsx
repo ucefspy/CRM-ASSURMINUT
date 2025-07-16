@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Plus, Edit, Trash2, FileText, Phone, Upload } from "lucide-react";
+import { Search, Plus, Edit, Trash2, FileText, Phone, Upload, Mail, MapPin, Calendar } from "lucide-react";
 import { Layout } from "@/components/layout/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { NewClientModal } from "@/components/modals/new-client-modal";
 import { NewDevisModal } from "@/components/modals/new-devis-modal";
 import { CallLogModal } from "@/components/modals/call-log-modal";
 import { ImportClientsModal } from "@/components/modals/import-clients-modal";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Client } from "@shared/schema";
 
 export default function Clients() {
@@ -20,6 +21,7 @@ export default function Clients() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<number | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
+  const isMobile = useIsMobile();
 
   const { data: clients, isLoading } = useQuery<Client[]>({
     queryKey: ["/api/clients"],
@@ -60,102 +62,192 @@ export default function Clients() {
     setShowCallLogModal(true);
   };
 
+  // Composant pour l'affichage mobile en cartes
+  const MobileClientCard = ({ client }: { client: Client }) => (
+    <Card className="mb-4">
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <div>
+            <h3 className="font-medium text-lg">{client.prenom} {client.nom}</h3>
+            <div className="mt-1">{getStatusBadge(client.statut)}</div>
+          </div>
+          <div className="flex space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleCreateDevis(client.id)}
+              className="text-blue-600 hover:text-blue-800 p-2"
+            >
+              <FileText className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleCreateCall(client.id)}
+              className="text-green-600 hover:text-green-800 p-2"
+            >
+              <Phone className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        
+        <div className="space-y-2 text-sm text-slate-600">
+          <div className="flex items-center space-x-2">
+            <Mail className="h-4 w-4" />
+            <span className="truncate">{client.email}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Phone className="h-4 w-4" />
+            <span>{client.telephone}</span>
+          </div>
+          {client.adresse && (
+            <div className="flex items-center space-x-2">
+              <MapPin className="h-4 w-4" />
+              <span className="truncate">{client.adresse}</span>
+            </div>
+          )}
+          <div className="flex items-center space-x-2">
+            <Calendar className="h-4 w-4" />
+            <span>{formatDate(client.createdAt || "")}</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <Layout title="Clients" onNewClient={() => setShowNewClientModal(true)}>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Liste des clients</CardTitle>
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder="Rechercher un client..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+      <div className="space-y-4">
+        {/* Header avec actions - adapté mobile */}
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+              <CardTitle>Liste des clients ({filteredClients?.length || 0})</CardTitle>
+              <div className="flex flex-col lg:flex-row lg:items-center space-y-2 lg:space-y-0 lg:space-x-4">
+                <div className="relative flex-1 lg:flex-none">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                  <Input
+                    placeholder="Rechercher un client..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 lg:w-64"
+                  />
+                </div>
+                <div className="flex space-x-2">
+                  <Button 
+                    onClick={() => setShowImportModal(true)} 
+                    variant="outline"
+                    className="flex-1 lg:flex-none"
+                    size={isMobile ? "sm" : "default"}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Importer
+                  </Button>
+                  <Button 
+                    onClick={() => setShowNewClientModal(true)}
+                    className="flex-1 lg:flex-none"
+                    size={isMobile ? "sm" : "default"}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nouveau
+                  </Button>
+                </div>
               </div>
-              <Button 
-                onClick={() => setShowImportModal(true)} 
-                variant="outline"
-                className="flex items-center space-x-2"
-              >
-                <Upload className="h-4 w-4" />
-                <span>Importer</span>
-              </Button>
-              <Button onClick={() => setShowNewClientModal(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nouveau client
-              </Button>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-8">
+          </CardHeader>
+        </Card>
+
+        {/* Contenu principal - Table desktop / Cards mobile */}
+        {isLoading ? (
+          <Card>
+            <CardContent className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
               <p className="mt-2 text-slate-600">Chargement...</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Téléphone</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Date de création</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredClients?.map((client) => (
-                  <TableRow key={client.id}>
-                    <TableCell className="font-medium">
-                      {client.prenom} {client.nom}
-                    </TableCell>
-                    <TableCell>{client.email}</TableCell>
-                    <TableCell>{client.telephone}</TableCell>
-                    <TableCell>{getStatusBadge(client.statut)}</TableCell>
-                    <TableCell>{formatDate(client.createdAt || "")}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleCreateDevis(client.id)}
-                        >
-                          <FileText className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleCreateCall(client.id)}
-                        >
-                          <Phone className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-          
-          {filteredClients?.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-slate-500">Aucun client trouvé</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        ) : isMobile ? (
+          // Affichage mobile en cartes
+          <div>
+            {filteredClients?.map((client) => (
+              <MobileClientCard key={client.id} client={client} />
+            ))}
+            {filteredClients?.length === 0 && (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <p className="text-slate-600">Aucun client trouvé</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        ) : (
+          // Affichage desktop en table
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nom</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Téléphone</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Date de création</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredClients?.map((client) => (
+                      <TableRow key={client.id}>
+                        <TableCell className="font-medium">
+                          {client.prenom} {client.nom}
+                        </TableCell>
+                        <TableCell>{client.email}</TableCell>
+                        <TableCell>{client.telephone}</TableCell>
+                        <TableCell>{getStatusBadge(client.statut)}</TableCell>
+                        <TableCell>{formatDate(client.createdAt || "")}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleCreateDevis(client.id)}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleCreateCall(client.id)}
+                              className="text-green-600 hover:text-green-800"
+                            >
+                              <Phone className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-slate-600 hover:text-slate-800"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       <NewClientModal open={showNewClientModal} onClose={() => setShowNewClientModal(false)} />
       <NewDevisModal

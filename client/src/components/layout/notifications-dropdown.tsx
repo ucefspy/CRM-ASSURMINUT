@@ -3,6 +3,7 @@ import { Bell, Calendar, Users, FileText, Check, X, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 interface Notification {
@@ -46,6 +47,7 @@ const getPriorityColor = (priority: string) => {
 
 export function NotificationsDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // Récupérer les rappels du jour
   const { data: rappelsToday = [] } = useQuery({

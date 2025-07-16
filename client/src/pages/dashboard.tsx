@@ -22,6 +22,7 @@ import { NewClientModal } from "@/components/modals/new-client-modal";
 import { NewDevisModal } from "@/components/modals/new-devis-modal";
 import { DocumentUploadModal } from "@/components/modals/document-upload-modal";
 import { CallLogModal } from "@/components/modals/call-log-modal";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Client, Rappel } from "@shared/schema";
 
 interface Stats {
@@ -36,6 +37,7 @@ export default function Dashboard() {
   const [showNewDevisModal, setShowNewDevisModal] = useState(false);
   const [showDocumentUploadModal, setShowDocumentUploadModal] = useState(false);
   const [showCallLogModal, setShowCallLogModal] = useState(false);
+  const isMobile = useIsMobile();
 
   const { data: stats, isLoading: statsLoading } = useQuery<Stats>({
     queryKey: ["/api/stats"],
