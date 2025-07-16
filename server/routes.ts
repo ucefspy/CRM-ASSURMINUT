@@ -103,20 +103,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Configuration des sessions
+  // Configuration des sessions avec store en mémoire pour éviter les problèmes de base de données
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
+    rolling: true, // Renouveler la session à chaque requête
     cookie: {
       secure: false, // Désactiver secure pour Replit
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24 // 24 heures
+      maxAge: 1000 * 60 * 60 * 24, // 24 heures
+      sameSite: 'lax' // Améliorer la compatibilité
     }
   }));
 
-  // Middleware d'authentification
+  // Middleware d'authentification avec debug
   const requireAuth = (req: any, res: any, next: any) => {
+    console.log('Session check:', {
+      sessionId: req.sessionID,
+      hasSession: !!req.session,
+      hasUser: !!req.session?.user,
+      user: req.session?.user ? req.session.user.username : 'none'
+    });
+    
     if (!req.session?.user) {
       return res.status(401).json({ message: "Non autorisé" });
     }
