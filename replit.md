@@ -36,12 +36,19 @@ Preferred communication style: Simple, everyday language.
 ## Key Components
 
 ### Database Schema
-- **Users**: Agent and admin user management
+- **Users**: 3-level user management system with role-based access control (Admin, Superviseur, Agent)
 - **Clients**: Customer information and status tracking
 - **Devis**: Insurance quotes with guarantees and pricing
 - **Documents**: File attachments linked to clients
 - **Rappels**: Reminder/appointment system
 - **Appels**: Call log tracking
+
+### User Role System
+- **Admin**: Full system access, can manage all users and see system statistics
+- **Superviseur**: Can manage agents and access administration features
+- **Agent**: Standard CRM functionality, cannot access administration
+- **Permissions**: Role-based middleware controls access to routes and features
+- **Default Accounts**: Automatically created on first startup (see UTILISATEURS.md)
 
 ### API Routes
 - Authentication endpoints (`/api/login`, `/api/logout`, `/api/me`)
@@ -107,6 +114,12 @@ Preferred communication style: Simple, everyday language.
 3. `npm run db:push`: Applies database schema changes
 
 ### Recent Changes
+- **2025-07-16**: Implemented comprehensive 3-level user session system with role-based access control
+- **2025-07-16**: Created complete authentication infrastructure with Admin, Superviseur, and Agent roles
+- **2025-07-16**: Added user management page with ability to create, view, and delete users based on permissions
+- **2025-07-16**: Implemented middleware system for role-based route protection
+- **2025-07-16**: Created automatic user seeding system that initializes default accounts on first startup
+- **2025-07-16**: Added administration section to sidebar (visible only to admin/superviseur roles)
 - **2025-07-16**: Updated all user login passwords with secure bcrypt hashing (12 rounds)
 - **2025-07-16**: Created UTILISATEURS.md file with all login credentials for easy reference
 - **2025-07-16**: Fixed Supabase database connection issue - Replit's DATABASE_URL environment variable was overriding .env file, causing app to connect to wrong database

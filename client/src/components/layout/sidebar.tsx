@@ -25,6 +25,10 @@ const menuItems = [
   { path: "/appels", icon: Phone, label: "Journal des appels" },
 ];
 
+const adminMenuItems = [
+  { path: "/administration", icon: Shield, label: "Administration", roles: ["admin", "superviseur"] },
+];
+
 interface SidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
@@ -126,6 +130,40 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                   </li>
                 );
               })}
+              
+              {/* Section Administration - mobile */}
+              {user && ['admin', 'superviseur'].includes(user.role) && (
+                <>
+                  <div className="border-t border-slate-200 my-4"></div>
+                  <div className="px-4 py-2">
+                    <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                      Administration
+                    </h3>
+                  </div>
+                  {adminMenuItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location === item.path;
+                    
+                    return (
+                      <li key={item.path}>
+                        <Link href={item.path}>
+                          <span 
+                            className={`flex items-center space-x-3 rounded-lg px-4 py-3 font-medium transition-colors cursor-pointer ${
+                              isActive 
+                                ? "text-primary bg-primary/10" 
+                                : "text-slate-600 hover:text-primary hover:bg-slate-50"
+                            }`}
+                            onClick={handleLinkClick}
+                          >
+                            <Icon className="w-5 h-5" />
+                            <span>{item.label}</span>
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </>
+              )}
             </ul>
           </div>
           
@@ -200,6 +238,37 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
               </li>
             );
           })}
+          
+          {/* Section Administration - desktop */}
+          {user && ['admin', 'superviseur'].includes(user.role) && (
+            <>
+              <div className="border-t border-slate-200 my-4"></div>
+              <div className="px-4 py-2">
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Administration
+                </h3>
+              </div>
+              {adminMenuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location === item.path;
+                
+                return (
+                  <li key={item.path}>
+                    <Link href={item.path}>
+                      <span className={`flex items-center space-x-3 rounded-lg px-4 py-3 font-medium transition-colors cursor-pointer ${
+                        isActive 
+                          ? "text-primary bg-primary/10" 
+                          : "text-slate-600 hover:text-primary hover:bg-slate-50"
+                      }`}>
+                        <Icon className="w-5 h-5" />
+                        <span>{item.label}</span>
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </>
+          )}
         </ul>
       </div>
       

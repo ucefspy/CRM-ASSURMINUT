@@ -22,7 +22,7 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   nom: varchar("nom", { length: 100 }).notNull(),
   prenom: varchar("prenom", { length: 100 }).notNull(),
-  role: varchar("role", { length: 20 }).notNull().default("agent"), // agent, admin
+  role: varchar("role", { length: 20 }).notNull().default("agent"), // admin, superviseur, agent
   actif: boolean("actif").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

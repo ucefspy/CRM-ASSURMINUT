@@ -11,6 +11,7 @@ import Devis from "@/pages/devis";
 import Documents from "@/pages/documents";
 import Agenda from "@/pages/agenda";
 import Appels from "@/pages/appels";
+import AdministrationPage from "@/pages/administration";
 
 function Router() {
   return (
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/documents" component={Documents} />
       <Route path="/agenda" component={Agenda} />
       <Route path="/appels" component={Appels} />
+      <Route path="/administration" component={AdministrationPage} />
       <Route component={NotFound} />
     </Switch>
   );

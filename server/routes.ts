@@ -5,6 +5,16 @@ import { storage } from "./storage";
 import { authService } from "./auth";
 import { pdfService } from "./pdf";
 import { pool } from "./db";
+import { seedDefaultUsers } from "./seed";
+import { userController } from "./controllers/userController";
+import { 
+  requireAuth, 
+  requireAdmin, 
+  requireSupervisorOrAdmin,
+  canManageUsers,
+  canAccessClient,
+  roleBasedAccess
+} from "./middleware/auth";
 import { loginSchema, insertClientSchema, insertDevisSchema, insertRappelSchema, insertAppelSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import multer from "multer";
@@ -117,61 +127,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
-  // Middleware d'authentification avec debug
-  const requireAuth = (req: any, res: any, next: any) => {
-    const sessionInfo = {
-      sessionId: req.sessionID,
-      hasSession: !!req.session,
-      hasUser: !!req.session?.user,
-      user: req.session?.user ? req.session.user.username : 'none'
-    };
-    
-    // Afficher les logs seulement si pas d'utilisateur connecté
-    if (!req.session?.user) {
-      console.log('Session check:', sessionInfo);
-      return res.status(401).json({ message: "Non autorisé" });
-    }
-    next();
-  };
+  // Initialiser les comptes par défaut au démarrage
+  await seedDefaultUsers();
 
-  // Routes d'authentification avec base de données Supabase
-  app.post("/api/login", async (req, res) => {
-    try {
-      const loginData = loginSchema.parse(req.body);
-      
-      console.log('Authentification via base de données Supabase pour:', loginData.username);
-      const user = await authService.authenticate(loginData);
-      
-      if (!user) {
-        return res.status(401).json({ message: "Identifiants incorrects" });
-      }
-      
-      req.session.user = user;
-      res.json({ user });
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({ message: "Données invalides", errors: error.errors });
-      }
-      console.error('Erreur lors de l\'authentification:', error);
-      res.status(500).json({ message: "Erreur interne du serveur" });
-    }
-  });
+  // Routes d'authentification avec gestion des rôles
+  app.post("/api/login", userController.login.bind(userController));
+  app.post("/api/logout", userController.logout.bind(userController));
+  app.get("/api/me", requireAuth, userController.getMe.bind(userController));
 
-  app.post("/api/logout", (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ message: "Erreur lors de la déconnexion" });
-      }
-      res.json({ message: "Déconnecté avec succès" });
-    });
-  });
+  // Routes de gestion des utilisateurs
+  app.get("/api/users", requireAuth, requireSupervisorOrAdmin, userController.getUsers.bind(userController));
+  app.get("/api/users/stats", requireAuth, requireAdmin, userController.getUserStats.bind(userController));
+  app.get("/api/users/:id", requireAuth, userController.getUserById.bind(userController));
+  app.post("/api/users", requireAuth, canManageUsers, userController.createUser.bind(userController));
+  app.put("/api/users/:id", requireAuth, userController.updateUser.bind(userController));
+  app.delete("/api/users/:id", requireAuth, canManageUsers, userController.deleteUser.bind(userController));
 
-  app.get("/api/me", requireAuth, (req, res) => {
-    res.json({ user: req.session.user });
-  });
-
-  // Routes pour les clients
-  app.get("/api/clients", requireAuth, async (req, res) => {
+  // Routes pour les clients (avec contrôle d'accès basé sur le rôle)
+  app.get("/api/clients", requireAuth, canAccessClient, async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 50;
       const offset = parseInt(req.query.offset as string) || 0;
