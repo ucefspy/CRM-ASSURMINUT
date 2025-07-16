@@ -63,14 +63,17 @@ export default function AdministrationPage() {
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuth();
 
-  const { data: users, isLoading: usersLoading } = useQuery<User[]>({
+  const { data: usersResponse, isLoading: usersLoading } = useQuery<{users: User[]}>({
     queryKey: ["/api/users"],
   });
 
-  const { data: userStats } = useQuery<UserStats>({
+  const { data: userStatsResponse } = useQuery<{stats: UserStats}>({
     queryKey: ["/api/users/stats"],
     enabled: currentUser?.role === 'admin',
   });
+
+  const users = usersResponse?.users || [];
+  const userStats = userStatsResponse?.stats;
 
   const createUserMutation = useMutation({
     mutationFn: async (userData: typeof newUser) => {
