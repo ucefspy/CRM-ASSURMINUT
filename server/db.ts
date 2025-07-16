@@ -29,13 +29,13 @@ if (!supabaseUrl) {
 export const pool = new Pool({ 
   connectionString: supabaseUrl,
   ssl: supabaseUrl.includes('supabase.com') ? { rejectUnauthorized: false } : false,
-  // Configuration optimisée pour des connexions plus rapides
-  max: 20, // Maximum de 20 connexions
-  idleTimeoutMillis: 30000, // 30 secondes avant fermeture des connexions inactives
-  connectionTimeoutMillis: 10000, // 10 secondes de timeout pour les nouvelles connexions
-  statement_timeout: 30000, // 30 secondes pour l'exécution des requêtes
-  query_timeout: 30000, // 30 secondes pour les requêtes
+  // Configuration optimisée pour Supabase
+  max: 10, // Maximum de 10 connexions
+  idleTimeoutMillis: 60000, // 1 minute avant fermeture des connexions inactives
+  connectionTimeoutMillis: 20000, // 20 secondes de timeout pour les nouvelles connexions
+  statement_timeout: 60000, // 1 minute pour l'exécution des requêtes
+  query_timeout: 60000, // 1 minute pour les requêtes
   keepAlive: true, // Garder les connexions ouvertes
-  keepAliveInitialDelayMillis: 10000 // Délai initial pour keepAlive
+  keepAliveInitialDelayMillis: 0 // Pas de délai initial pour keepAlive
 });
 export const db = drizzle({ client: pool, schema });

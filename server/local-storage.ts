@@ -117,12 +117,27 @@ export class LocalStorageService {
 
   async createClient(client: InsertClient): Promise<Client> {
     const newClient: Client = {
-      id: Math.max(...clients.map(c => c.id)) + 1,
-      ...client,
+      id: clients.length > 0 ? Math.max(...clients.map(c => c.id)) + 1 : 1,
+      nom: client.nom || '',
+      prenom: client.prenom || '',
+      email: client.email || '',
+      telephone: client.telephone || '',
+      adresse: client.adresse || '',
+      dateNaissance: client.dateNaissance || null,
+      numeroSecu: client.numeroSecu || '',
+      situationFamiliale: client.situationFamiliale || 'celibataire',
+      nombreAyantsDroit: client.nombreAyantsDroit || 0,
+      profession: client.profession || '',
+      mutuelleActuelle: client.mutuelleActuelle || '',
+      niveauCouverture: client.niveauCouverture || 'base',
+      statut: client.statut || 'prospect',
+      notes: client.notes || '',
+      createdBy: client.createdBy || 1,
       createdAt: new Date(),
       updatedAt: new Date()
     };
     clients.push(newClient);
+    console.log('Client créé dans le stockage local:', newClient.nom, newClient.prenom);
     return newClient;
   }
 

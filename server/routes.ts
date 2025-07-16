@@ -3,8 +3,6 @@ import { createServer, type Server } from "http";
 import session from "express-session";
 import { storage } from "./storage";
 import { authService } from "./auth";
-import { localAuthService } from "./local-auth";
-import { localStorageService } from "./local-storage";
 import { pdfService } from "./pdf";
 import { pool } from "./db";
 import { loginSchema, insertClientSchema, insertDevisSchema, insertRappelSchema, insertAppelSchema } from "@shared/schema";
@@ -136,28 +134,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
-  // Routes d'authentification avec fallback local
+  // Routes d'authentification avec base de données Supabase
   app.post("/api/login", async (req, res) => {
     try {
       const loginData = loginSchema.parse(req.body);
       
-      // Essayer d'abord l'authentification locale (rapide)
-      console.log('Tentative d\'authentification locale...');
-      let user = await localAuthService.authenticate(loginData);
-      
-      // Si l'authentification locale échoue, essayer la base de données
-      if (!user) {
-        console.log('Tentative d\'authentification base de données...');
-        try {
-          user = await Promise.race([
-            authService.authenticate(loginData),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
-          ]);
-        } catch (error) {
-          console.log('Authentification base de données échouée:', error.message);
-          user = null;
-        }
-      }
+      console.log('Authentification via base de données Supabase pour:', loginData.username);
+      const user = await authService.authenticate(loginData);
       
       if (!user) {
         return res.status(401).json({ message: "Identifiants incorrects" });
@@ -187,25 +170,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ user: req.session.user });
   });
 
-  // Routes pour les clients avec fallback local
+  // Routes pour les clients
   app.get("/api/clients", requireAuth, async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 50;
       const offset = parseInt(req.query.offset as string) || 0;
-      
-      // Essayer la base de données avec timeout
-      try {
-        const clients = await Promise.race([
-          storage.getClients(limit, offset),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
-        ]);
-        res.json(clients);
-      } catch (error) {
-        console.log('Utilisation du stockage local pour les clients');
-        const clients = await localStorageService.getClients();
-        res.json(clients);
-      }
+      const clients = await storage.getClients(limit, offset);
+      res.json(clients);
     } catch (error) {
+      console.error('Erreur lors de la récupération des clients:', error);
       res.status(500).json({ message: "Erreur lors de la récupération des clients" });
     }
   });
@@ -255,6 +228,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Données invalides", errors: error.errors });
       }
+      console.error('Erreur lors de la création du client:', error);
       res.status(500).json({ message: "Erreur lors de la création du client" });
     }
   });
@@ -525,19 +499,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/rappels/today", requireAuth, async (req, res) => {
     try {
-      // Essayer la base de données avec timeout
-      try {
-        const rappels = await Promise.race([
-          storage.getRappelsToday(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
-        ]);
-        res.json(rappels);
-      } catch (error) {
-        console.log('Utilisation du stockage local pour les rappels du jour');
-        const rappels = await localStorageService.getRappelsToday();
-        res.json(rappels);
-      }
+      const rappels = await storage.getRappelsToday();
+      res.json(rappels);
     } catch (error) {
+      console.error('Erreur lors de la récupération des rappels:', error);
       res.status(500).json({ message: "Erreur lors de la récupération des rappels" });
     }
   });
@@ -559,6 +524,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Données invalides", errors: error.errors });
       }
+      console.error('Erreur lors de la création du rappel:', error);
       res.status(500).json({ message: "Erreur lors de la création du rappel" });
     }
   });
@@ -621,22 +587,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Route pour les statistiques avec fallback local
+  // Route pour les statistiques
   app.get("/api/stats", requireAuth, async (req, res) => {
     try {
-      // Essayer la base de données avec timeout
-      try {
-        const stats = await Promise.race([
-          storage.getStats(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
-        ]);
-        res.json(stats);
-      } catch (error) {
-        console.log('Utilisation du stockage local pour les statistiques');
-        const stats = await localStorageService.getStats();
-        res.json(stats);
-      }
+      const stats = await storage.getStats();
+      res.json(stats);
     } catch (error) {
+      console.error('Erreur lors de la récupération des statistiques:', error);
       res.status(500).json({ message: "Erreur lors de la récupération des statistiques" });
     }
   });
