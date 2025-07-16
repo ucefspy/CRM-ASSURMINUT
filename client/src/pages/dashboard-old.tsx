@@ -254,7 +254,7 @@ export default function Dashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-600 text-sm font-medium">Devis donnés</p>
+                <p className="text-slate-600 text-sm font-medium">Devis envoyés</p>
                 <p className="text-3xl font-bold text-slate-800 mt-1">
                   {statsLoading ? "..." : stats?.quotesGiven || 0}
                 </p>
@@ -264,7 +264,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-4 flex items-center">
-              <span className="text-green-600 text-sm font-medium">+5%</span>
+              <span className="text-green-600 text-sm font-medium">+8%</span>
               <span className="text-slate-500 text-sm ml-2">ce mois</span>
             </div>
           </CardContent>
@@ -284,7 +284,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-4 flex items-center">
-              <span className="text-green-600 text-sm font-medium">+8%</span>
+              <span className="text-green-600 text-sm font-medium">+15%</span>
               <span className="text-slate-500 text-sm ml-2">ce mois</span>
             </div>
           </CardContent>

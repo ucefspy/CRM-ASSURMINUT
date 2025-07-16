@@ -248,6 +248,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/clients/:id", requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const clientData = insertClientSchema.partial().parse(req.body);
+      
+      const client = await storage.updateClient(id, clientData);
+      res.json(client);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Données invalides", errors: error.errors });
+      }
+      res.status(500).json({ message: "Erreur lors de la mise à jour du client" });
+    }
+  });
+
   app.delete("/api/clients/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
