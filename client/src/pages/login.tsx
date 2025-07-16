@@ -68,10 +68,11 @@ export default function Login() {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="username">Nom d'utilisateur</Label>
+              <Label htmlFor="username">Nom d'utilisateur ou Email</Label>
               <Input
                 id="username"
                 type="text"
+                placeholder="Nom d'utilisateur ou email"
                 {...form.register("username")}
                 className="w-full"
               />

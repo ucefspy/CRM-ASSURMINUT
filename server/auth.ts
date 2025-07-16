@@ -28,13 +28,23 @@ export class AuthService {
     console.log('Authentification via base de données pour:', loginData.username);
     
     try {
-      // Ajouter un timeout pour éviter les attentes trop longues
-      const user = await Promise.race([
+      // Essayer d'abord par nom d'utilisateur, puis par email
+      let user = await Promise.race([
         storage.getUserByUsername(loginData.username),
         new Promise<null>((_, reject) => 
           setTimeout(() => reject(new Error('Timeout authentification')), 8000)
         )
       ]);
+      
+      // Si pas trouvé par username, essayer par email
+      if (!user) {
+        user = await Promise.race([
+          storage.getUserByEmail(loginData.username),
+          new Promise<null>((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout authentification')), 8000)
+          )
+        ]);
+      }
       
       if (!user || !user.actif) {
         return null;
