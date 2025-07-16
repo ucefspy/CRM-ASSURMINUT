@@ -107,6 +107,8 @@ Preferred communication style: Simple, everyday language.
 3. `npm run db:push`: Applies database schema changes
 
 ### Recent Changes
+- **2025-07-16**: Updated all user login passwords with secure bcrypt hashing (12 rounds)
+- **2025-07-16**: Created UTILISATEURS.md file with all login credentials for easy reference
 - **2025-07-16**: Fixed Supabase database connection issue - Replit's DATABASE_URL environment variable was overriding .env file, causing app to connect to wrong database
 - **2025-07-16**: Implemented comprehensive notifications system with real-time data from rappels and clients
 - **2025-07-16**: Updated database connection logic to force use of Supabase URL from .env file
