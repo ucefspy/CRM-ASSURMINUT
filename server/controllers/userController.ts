@@ -287,6 +287,53 @@ export class UserController {
     }
   }
 
+  // Réinitialiser le mot de passe d'un utilisateur
+  async resetPassword(req: AuthenticatedRequest, res: Response) {
+    try {
+      const userId = parseInt(req.params.id);
+      const currentUser = req.user;
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "ID utilisateur invalide" });
+      }
+      
+      const targetUser = await storage.getUser(userId);
+      
+      if (!targetUser) {
+        return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
+      
+      // Vérifications des permissions
+      if (currentUser.role === 'agent') {
+        return res.status(403).json({ 
+          message: "Les agents ne peuvent pas réinitialiser les mots de passe" 
+        });
+      }
+      
+      if (currentUser.role === 'superviseur' && targetUser.role !== 'agent') {
+        return res.status(403).json({ 
+          message: "Un superviseur ne peut réinitialiser que les mots de passe des agents" 
+        });
+      }
+      
+      // Générer un mot de passe temporaire
+      const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+      const hashedPassword = await authService.hashPassword(tempPassword);
+      
+      // Mettre à jour le mot de passe dans la base
+      await storage.updateUser(userId, { password: hashedPassword });
+      
+      console.log(`Mot de passe réinitialisé pour ${targetUser.username} par ${currentUser.username}`);
+      res.json({ 
+        message: "Mot de passe réinitialisé avec succès",
+        tempPassword: tempPassword 
+      });
+    } catch (error) {
+      console.error('Erreur lors de la réinitialisation du mot de passe:', error);
+      res.status(500).json({ message: "Erreur lors de la réinitialisation du mot de passe" });
+    }
+  }
+
   // Obtenir les statistiques des utilisateurs (admin seulement)
   async getUserStats(req: AuthenticatedRequest, res: Response) {
     try {

@@ -10,7 +10,14 @@ import {
   AlertCircle,
   Crown,
   Eye,
-  Plus
+  Plus,
+  UserX,
+  Key,
+  MoreVertical,
+  Power,
+  PowerOff,
+  Activity,
+  Clock
 } from "lucide-react";
 import { Layout } from "@/components/layout/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +39,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -50,11 +75,21 @@ interface UserStats {
 
 export default function AdministrationPage() {
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [createUserType, setCreateUserType] = useState<"agent" | "superviseur" | "admin">("agent");
   const [newUser, setNewUser] = useState({
     username: "",
     email: "",
     password: "",
+    nom: "",
+    prenom: "",
+    role: "agent"
+  });
+  const [editUser, setEditUser] = useState({
+    username: "",
+    email: "",
     nom: "",
     prenom: "",
     role: "agent"
@@ -128,6 +163,72 @@ export default function AdministrationPage() {
     },
   });
 
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ userId, userData }: { userId: number; userData: any }) => {
+      const response = await apiRequest("PUT", `/api/users/${userId}`, userData);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Utilisateur modifié",
+        description: "L'utilisateur a été modifié avec succès.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users/stats"] });
+      setShowEditUserModal(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors de la modification de l'utilisateur.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const toggleUserStatusMutation = useMutation({
+    mutationFn: async ({ userId, actif }: { userId: number; actif: boolean }) => {
+      const response = await apiRequest("PUT", `/api/users/${userId}`, { actif });
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: variables.actif ? "Utilisateur activé" : "Utilisateur désactivé",
+        description: `L'utilisateur a été ${variables.actif ? "activé" : "désactivé"} avec succès.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users/stats"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors du changement de statut.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await apiRequest("POST", `/api/users/${userId}/reset-password`);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Mot de passe réinitialisé",
+        description: `Nouveau mot de passe: ${data.tempPassword}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors de la réinitialisation du mot de passe.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const getRoleBadge = (role: string) => {
     switch (role) {
       case "admin":
@@ -164,6 +265,45 @@ export default function AdministrationPage() {
   const handleDeleteUser = (userId: number) => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) {
       deleteUserMutation.mutate(userId);
+    }
+  };
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setEditUser({
+      username: user.username,
+      email: user.email,
+      nom: user.nom,
+      prenom: user.prenom,
+      role: user.role
+    });
+    setShowEditUserModal(true);
+  };
+
+  const handleUpdateUser = () => {
+    if (selectedUser) {
+      updateUserMutation.mutate({
+        userId: selectedUser.id,
+        userData: editUser
+      });
+    }
+  };
+
+  const handleViewUserDetails = (user: User) => {
+    setSelectedUser(user);
+    setShowUserDetailsModal(true);
+  };
+
+  const handleToggleUserStatus = (userId: number, currentStatus: boolean) => {
+    toggleUserStatusMutation.mutate({
+      userId,
+      actif: !currentStatus
+    });
+  };
+
+  const handleResetPassword = (userId: number) => {
+    if (window.confirm("Êtes-vous sûr de vouloir réinitialiser le mot de passe de cet utilisateur ?")) {
+      resetPasswordMutation.mutate(userId);
     }
   };
 
@@ -512,22 +652,61 @@ export default function AdministrationPage() {
                       </td>
                       <td className="p-3">
                         <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleViewUserDetails(user)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          {canDeleteSpecificUser(user) && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleDeleteUser(user.id)}
-                              disabled={deleteUserMutation.isPending}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                          )}
+                          
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEditUser(user)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Modifier
+                              </DropdownMenuItem>
+                              
+                              <DropdownMenuItem 
+                                onClick={() => handleToggleUserStatus(user.id, user.actif)}
+                              >
+                                {user.actif ? (
+                                  <>
+                                    <PowerOff className="h-4 w-4 mr-2 text-red-500" />
+                                    Désactiver
+                                  </>
+                                ) : (
+                                  <>
+                                    <Power className="h-4 w-4 mr-2 text-green-500" />
+                                    Activer
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                              
+                              <DropdownMenuItem onClick={() => handleResetPassword(user.id)}>
+                                <Key className="h-4 w-4 mr-2" />
+                                Réinitialiser mot de passe
+                              </DropdownMenuItem>
+                              
+                              <DropdownMenuSeparator />
+                              
+                              {canDeleteSpecificUser(user) && (
+                                <DropdownMenuItem 
+                                  onClick={() => handleDeleteUser(user.id)}
+                                  disabled={deleteUserMutation.isPending}
+                                  className="text-red-600"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Supprimer
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </td>
                     </tr>
@@ -538,6 +717,221 @@ export default function AdministrationPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Modal d'édition d'utilisateur */}
+      <Dialog open={showEditUserModal} onOpenChange={setShowEditUserModal}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5" />
+              Modifier l'utilisateur
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-username" className="text-right">
+                Nom d'utilisateur
+              </Label>
+              <Input
+                id="edit-username"
+                value={editUser.username}
+                onChange={(e) => setEditUser({...editUser, username: e.target.value})}
+                className="col-span-3"
+                disabled={updateUserMutation.isPending}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={editUser.email}
+                onChange={(e) => setEditUser({...editUser, email: e.target.value})}
+                className="col-span-3"
+                disabled={updateUserMutation.isPending}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-nom" className="text-right">
+                Nom
+              </Label>
+              <Input
+                id="edit-nom"
+                value={editUser.nom}
+                onChange={(e) => setEditUser({...editUser, nom: e.target.value})}
+                className="col-span-3"
+                disabled={updateUserMutation.isPending}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-prenom" className="text-right">
+                Prénom
+              </Label>
+              <Input
+                id="edit-prenom"
+                value={editUser.prenom}
+                onChange={(e) => setEditUser({...editUser, prenom: e.target.value})}
+                className="col-span-3"
+                disabled={updateUserMutation.isPending}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-role" className="text-right">
+                Rôle
+              </Label>
+              <Select 
+                value={editUser.role} 
+                onValueChange={(value) => setEditUser({...editUser, role: value})}
+                disabled={updateUserMutation.isPending}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Sélectionner un rôle" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="agent">Agent</SelectItem>
+                  {currentUser?.role === 'admin' && (
+                    <SelectItem value="superviseur">Superviseur</SelectItem>
+                  )}
+                  {currentUser?.role === 'admin' && (
+                    <SelectItem value="admin">Admin</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => setShowEditUserModal(false)}>
+              Annuler
+            </Button>
+            <Button 
+              onClick={handleUpdateUser} 
+              disabled={updateUserMutation.isPending}
+            >
+              {updateUserMutation.isPending ? "Modification..." : "Enregistrer"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de détails d'utilisateur */}
+      <Dialog open={showUserDetailsModal} onOpenChange={setShowUserDetailsModal}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Détails de l'utilisateur
+            </DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-6">
+              {/* Informations personnelles */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600">Nom complet</Label>
+                  <p className="text-lg font-semibold">{selectedUser.prenom} {selectedUser.nom}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600">Nom d'utilisateur</Label>
+                  <p className="text-lg">@{selectedUser.username}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600">Email</Label>
+                  <p className="text-lg">{selectedUser.email}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600">Rôle</Label>
+                  <div>{getRoleBadge(selectedUser.role)}</div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600">Statut</Label>
+                  <Badge className={selectedUser.actif ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                    {selectedUser.actif ? (
+                      <>
+                        <Activity className="h-3 w-3 mr-1" />
+                        Actif
+                      </>
+                    ) : (
+                      <>
+                        <UserX className="h-3 w-3 mr-1" />
+                        Inactif
+                      </>
+                    )}
+                  </Badge>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600">Date de création</Label>
+                  <p className="text-sm text-gray-500 flex items-center">
+                    <Clock className="h-4 w-4 mr-1" />
+                    {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleString('fr-FR') : 'Non disponible'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Permissions basées sur le rôle */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium text-gray-600">Permissions</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {selectedUser.role === 'admin' && (
+                    <>
+                      <div className="bg-red-50 p-3 rounded-lg">
+                        <div className="flex items-center">
+                          <Crown className="h-4 w-4 text-red-600 mr-2" />
+                          <span className="text-sm font-medium">Administrateur système</span>
+                        </div>
+                      </div>
+                      <div className="bg-blue-50 p-3 rounded-lg">
+                        <div className="flex items-center">
+                          <Users className="h-4 w-4 text-blue-600 mr-2" />
+                          <span className="text-sm font-medium">Gestion utilisateurs</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {selectedUser.role === 'superviseur' && (
+                    <>
+                      <div className="bg-blue-50 p-3 rounded-lg">
+                        <div className="flex items-center">
+                          <Shield className="h-4 w-4 text-blue-600 mr-2" />
+                          <span className="text-sm font-medium">Supervision d'équipe</span>
+                        </div>
+                      </div>
+                      <div className="bg-green-50 p-3 rounded-lg">
+                        <div className="flex items-center">
+                          <UserPlus className="h-4 w-4 text-green-600 mr-2" />
+                          <span className="text-sm font-medium">Création d'agents</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {selectedUser.role === 'agent' && (
+                    <>
+                      <div className="bg-green-50 p-3 rounded-lg">
+                        <div className="flex items-center">
+                          <UserCheck className="h-4 w-4 text-green-600 mr-2" />
+                          <span className="text-sm font-medium">Gestion clients</span>
+                        </div>
+                      </div>
+                      <div className="bg-yellow-50 p-3 rounded-lg">
+                        <div className="flex items-center">
+                          <AlertCircle className="h-4 w-4 text-yellow-600 mr-2" />
+                          <span className="text-sm font-medium">Accès standard</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={() => setShowUserDetailsModal(false)}>
+              Fermer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }

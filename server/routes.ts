@@ -140,7 +140,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/users/stats", requireAuth, requireAdmin, userController.getUserStats.bind(userController));
   app.get("/api/users/:id", requireAuth, userController.getUserById.bind(userController));
   app.post("/api/users", requireAuth, canManageUsers, userController.createUser.bind(userController));
-  app.put("/api/users/:id", requireAuth, userController.updateUser.bind(userController));
+  app.put("/api/users/:id", requireAuth, canManageUsers, userController.updateUser.bind(userController));
+  app.post("/api/users/:id/reset-password", requireAuth, canManageUsers, userController.resetPassword.bind(userController));
   app.delete("/api/users/:id", requireAuth, canManageUsers, userController.deleteUser.bind(userController));
 
   // Routes pour les clients (avec contrôle d'accès basé sur le rôle)
