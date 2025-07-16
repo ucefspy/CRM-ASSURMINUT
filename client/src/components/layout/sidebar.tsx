@@ -165,14 +165,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                 </>
               )}
               
-              {/* DEBUG: Affichage temporaire pour tester - mobile */}
-              {user && (
-                <div className="p-2 bg-yellow-100 text-xs">
-                  <p>User: {user.username}</p>
-                  <p>Role: {user.role}</p>
-                  <p>Can access admin: {['admin', 'superviseur'].includes(user.role) ? 'Yes' : 'No'}</p>
-                </div>
-              )}
+
             </ul>
           </div>
           
@@ -279,14 +272,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
             </>
           )}
           
-          {/* DEBUG: Affichage temporaire pour tester */}
-          {user && (
-            <div className="p-2 bg-yellow-100 text-xs">
-              <p>User: {user.username}</p>
-              <p>Role: {user.role}</p>
-              <p>Can access admin: {['admin', 'superviseur'].includes(user.role) ? 'Yes' : 'No'}</p>
-            </div>
-          )}
+
         </ul>
       </div>
       

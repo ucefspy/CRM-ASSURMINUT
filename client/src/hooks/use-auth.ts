@@ -9,6 +9,27 @@ export function useAuth() {
     queryKey: ["/api/me"],
     retry: false,
     staleTime: Infinity,
+    queryFn: async () => {
+      try {
+        const response = await fetch("/api/me", {
+          credentials: "include",
+        });
+        
+        if (response.status === 401) {
+          return null;
+        }
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.user;
+      } catch (error) {
+        console.error("Auth error:", error);
+        return null;
+      }
+    },
   });
 
   const loginMutation = useMutation({
