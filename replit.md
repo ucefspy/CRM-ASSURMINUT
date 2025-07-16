@@ -106,4 +106,7 @@ Preferred communication style: Simple, everyday language.
 2. `npm run start`: Runs production server
 3. `npm run db:push`: Applies database schema changes
 
+### Recent Changes
+- **2025-01-16**: Updated @vitejs/plugin-react from 4.3.2 to 4.6.0 to resolve dependency conflict with vite 6.3.5 during deployment
+
 The application follows a modular architecture with clear separation between client and server code, shared TypeScript types, and a consistent API design pattern.
