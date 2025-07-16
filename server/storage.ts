@@ -143,15 +143,25 @@ export class DatabaseStorage implements IStorage {
   async createClient(insertClient: InsertClient): Promise<Client> {
     const [client] = await db
       .insert(clients)
-      .values(insertClient)
+      .values({
+        ...insertClient,
+        dateNaissance: typeof insertClient.dateNaissance === 'string' 
+          ? insertClient.dateNaissance 
+          : insertClient.dateNaissance.toISOString().split('T')[0]
+      })
       .returning();
     return client;
   }
 
   async updateClient(id: number, updateClient: Partial<InsertClient>): Promise<Client> {
+    const updateData: any = { ...updateClient };
+    if (updateData.dateNaissance && typeof updateData.dateNaissance !== 'string') {
+      updateData.dateNaissance = updateData.dateNaissance.toISOString().split('T')[0];
+    }
+    
     const [client] = await db
       .update(clients)
-      .set({ ...updateClient, updatedAt: new Date() })
+      .set({ ...updateData, updatedAt: new Date() })
       .where(eq(clients.id, id))
       .returning();
     return client;
@@ -198,15 +208,26 @@ export class DatabaseStorage implements IStorage {
     const numeroDevis = `DEV-${Date.now()}`;
     const [devisItem] = await db
       .insert(devis)
-      .values({ ...insertDevis, numeroDevis })
+      .values({
+        ...insertDevis,
+        numeroDevis,
+        dateValidite: typeof insertDevis.dateValidite === 'string' 
+          ? insertDevis.dateValidite 
+          : insertDevis.dateValidite.toISOString().split('T')[0]
+      })
       .returning();
     return devisItem;
   }
 
   async updateDevis(id: number, updateDevis: Partial<InsertDevis>): Promise<Devis> {
+    const updateData: any = { ...updateDevis };
+    if (updateData.dateValidite && typeof updateData.dateValidite !== 'string') {
+      updateData.dateValidite = updateData.dateValidite.toISOString().split('T')[0];
+    }
+    
     const [devisItem] = await db
       .update(devis)
-      .set({ ...updateDevis, updatedAt: new Date() })
+      .set({ ...updateData, updatedAt: new Date() })
       .where(eq(devis.id, id))
       .returning();
     return devisItem;
