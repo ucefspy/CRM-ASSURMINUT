@@ -2,12 +2,25 @@ import { Pool } from "pg";
 import { readFileSync } from "fs";
 
 // Configuration optimisée pour Supabase avec gestion des erreurs
-const supabaseUrl = process.env.SUPABASE_URL || 
-  readFileSync('.env', 'utf8')
-    .split('\n')
-    .find(line => line.startsWith('SUPABASE_URL='))
-    ?.split('=')[1] || 
-  process.env.DATABASE_URL;
+// Forcer l'utilisation de l'URL Supabase du fichier .env
+const supabaseUrl = (() => {
+  try {
+    const envContent = readFileSync('.env', 'utf8');
+    const databaseUrl = envContent
+      .split('\n')
+      .find(line => line.startsWith('DATABASE_URL='))
+      ?.split('=')[1];
+    
+    if (databaseUrl && databaseUrl.includes('supabase.com')) {
+      return databaseUrl;
+    }
+  } catch (error) {
+    console.warn('Impossible de lire le fichier .env');
+  }
+  
+  // Fallback sur les variables d'environnement
+  return process.env.SUPABASE_URL || process.env.DATABASE_URL;
+})();
 
 if (!supabaseUrl) {
   throw new Error("SUPABASE_URL ou DATABASE_URL doit être définie");
