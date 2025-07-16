@@ -1,50 +1,55 @@
-# Correction Dockerfile - Erreur Vite résolue
+# Dockerfile Correction Finale - Conflit Vite/React
 
-## Problème identifié ❌
+## 🔍 Problème identifié
 ```
-sh: vite: not found
-ERROR: process "/bin/sh -c npm run build" did not complete successfully: exit code: 127
+npm error ERESOLVE could not resolve
+npm error While resolving: @vitejs/plugin-react@4.3.3
+npm error Found: vite@6.3.5
+npm error Could not resolve dependency:
+npm error peer vite@"^4.2.0 || ^5.0.0" from @vitejs/plugin-react@4.3.3
 ```
 
-## Cause racine
-Le Dockerfile utilisait `npm ci --only=production` qui n'installait que les dépendances de production, mais `vite` et `esbuild` sont dans les devDependencies et sont nécessaires pour le build.
+## 🛠️ Solution appliquée
 
-## Correction appliquée ✅
-
-### Avant (incorrect) :
+### Correction Dockerfile :
 ```dockerfile
-RUN npm ci --only=production
-RUN npm run build
+# Installer toutes les dépendances avec legacy-peer-deps pour résoudre les conflits
+RUN npm ci --legacy-peer-deps
 ```
 
-### Après (correct) :
-```dockerfile
-RUN npm ci
-RUN npm run build
-RUN npm prune --production
-```
+### Explication du problème :
+- **vite@6.3.5** est installé (version récente)
+- **@vitejs/plugin-react@4.3.3** requiert vite@^4.2.0 || ^5.0.0
+- Conflit de versions entre vite v6 et plugin React v4
 
-## Dockerfile corrigé complet
+### Solution `--legacy-peer-deps` :
+- Ignore les conflits de peer dependencies
+- Utilise l'algorithme d'installation NPM v6 (plus permissif)
+- Permet l'installation malgré les versions incompatibles
 
+## 🚀 Prochaines étapes
+
+1. **Redéployez** dans Coolify
+2. **Surveillez** les logs - `npm ci --legacy-peer-deps` devrait réussir
+3. **Vérifiez** que le build continue avec `npm run build`
+4. **Testez** l'application déployée
+
+## 📋 Configuration finale recommandée
+
+### Dockerfile optimisé :
 ```dockerfile
 FROM node:18-alpine
 
-# Installer les dépendances système
-RUN apk add --no-cache \
-    python3 \
-    make \
-    g++ \
-    postgresql-client \
-    curl
-
-# Définir le répertoire de travail
 WORKDIR /app
 
-# Copier les fichiers package
+# Installer les dépendances système
+RUN apk add --no-cache python3 make g++ postgresql-client curl
+
+# Copier package.json et package-lock.json
 COPY package*.json ./
 
-# Installer toutes les dépendances (dev + prod pour le build)
-RUN npm ci
+# Installer toutes les dépendances avec legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
 # Copier le code source
 COPY . .
@@ -52,11 +57,11 @@ COPY . .
 # Créer les dossiers nécessaires
 RUN mkdir -p uploads dist
 
-# Builder l'application client
+# Build l'application
 RUN npm run build
 
-# Nettoyer les dépendances dev après le build
-RUN npm prune --production
+# Vérifier que le build a réussi
+RUN ls -la dist/
 
 # Exposer le port
 EXPOSE 5000
@@ -65,39 +70,23 @@ EXPOSE 5000
 ENV NODE_ENV=production
 ENV PORT=5000
 
-# Changer les permissions pour les uploads
-RUN chown -R node:node /app/uploads
-
-# Utiliser l'utilisateur node pour la sécurité
-USER node
-
-# Health check pour Coolify
+# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:5000/health || exit 1
 
-# Commande de démarrage
-CMD ["npm", "start"]
+# Démarrer l'application avec le script de production
+CMD ["node", "start-production.js"]
 ```
 
-## Prochaines actions
+## 🎯 Résultat attendu
 
-1. **Commitez la correction** :
-```bash
-git add Dockerfile
-git commit -m "Fix Dockerfile: install all deps for build, then prune"
-git push origin main
-```
-
-2. **Redéployez dans Coolify**
-   - Le build devrait maintenant réussir
-   - Vite et esbuild seront disponibles pour le build
-   - Les dépendances dev seront supprimées après le build
-
-3. **Vérifiez le résultat**
-   - Build réussi sans erreur vite
-   - Application accessible sur l'URL
-   - Health checks fonctionnels
+Après redéploiement :
+- ✅ **npm ci --legacy-peer-deps** réussit
+- ✅ **npm run build** termine avec succès
+- ✅ **Dockerfile** se construit entièrement
+- ✅ **Application** accessible sur l'URL Coolify
+- ✅ **CRM ASSURMINUT** pleinement fonctionnel
 
 ---
 
-**Le déploiement devrait maintenant réussir sans erreur !**
+**Le déploiement devrait maintenant réussir sans erreur de dépendances !**

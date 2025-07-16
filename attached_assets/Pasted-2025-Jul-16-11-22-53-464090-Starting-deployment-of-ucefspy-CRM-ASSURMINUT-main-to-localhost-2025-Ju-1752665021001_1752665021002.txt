@@ -1,0 +1,744 @@
+2025-Jul-16 11:22:53.464090
+Starting deployment of ucefspy/CRM-ASSURMINUT:main to localhost.
+2025-Jul-16 11:22:53.733563
+Preparing container with helper image: ghcr.io/coollabsio/coolify-helper:1.0.8.
+2025-Jul-16 11:22:53.883037
+[CMD]: docker stop --time=30 lccow0o4ccsw84g0kcg8c408
+2025-Jul-16 11:22:53.883037
+Error response from daemon: No such container: lccow0o4ccsw84g0kcg8c408
+2025-Jul-16 11:22:53.963284
+[CMD]: docker rm -f lccow0o4ccsw84g0kcg8c408
+2025-Jul-16 11:22:53.963284
+Error response from daemon: No such container: lccow0o4ccsw84g0kcg8c408
+2025-Jul-16 11:22:54.066305
+[CMD]: docker run -d --network coolify --name lccow0o4ccsw84g0kcg8c408 --rm -v /var/run/docker.sock:/var/run/docker.sock ghcr.io/coollabsio/coolify-helper:1.0.8
+2025-Jul-16 11:22:54.066305
+ecc4cb0e6326b41fbf9ccb7f862c994002ecf200a9e5c9111be47eebc5d58add
+2025-Jul-16 11:22:56.149811
+[CMD]: docker exec lccow0o4ccsw84g0kcg8c408 bash -c 'GIT_SSH_COMMAND="ssh -o ConnectTimeout=30 -p 22 -o Port=22 -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git ls-remote https://x-access-token:<REDACTED>@github.com/ucefspy/CRM-ASSURMINUT.git main'
+2025-Jul-16 11:22:56.149811
+c0cb21d802800b747c13444f156bb394c6eb5475	refs/heads/main
+2025-Jul-16 11:22:56.410606
+----------------------------------------
+2025-Jul-16 11:22:56.414169
+Importing ucefspy/CRM-ASSURMINUT:main (commit sha HEAD) to /artifacts/lccow0o4ccsw84g0kcg8c408.
+2025-Jul-16 11:22:56.552396
+[CMD]: docker exec lccow0o4ccsw84g0kcg8c408 bash -c 'git clone -b "main" https://x-access-token:<REDACTED>@github.com/ucefspy/CRM-ASSURMINUT.git /artifacts/lccow0o4ccsw84g0kcg8c408 && cd /artifacts/lccow0o4ccsw84g0kcg8c408 && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git submodule update --init --recursive && cd /artifacts/lccow0o4ccsw84g0kcg8c408 && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git lfs pull'
+2025-Jul-16 11:22:56.552396
+Cloning into '/artifacts/lccow0o4ccsw84g0kcg8c408'...
+2025-Jul-16 11:22:57.483286
+[CMD]: docker exec lccow0o4ccsw84g0kcg8c408 bash -c 'cd /artifacts/lccow0o4ccsw84g0kcg8c408 && git log -1 c0cb21d802800b747c13444f156bb394c6eb5475 --pretty=%B'
+2025-Jul-16 11:22:57.483286
+Configure application for production deployment with static file serving
+2025-Jul-16 11:22:57.487718
+Adds a production start script, configures the Dockerfile and nixpacks.toml to serve static assets, and fixes the server port.
+2025-Jul-16 11:22:57.487718
+2025-Jul-16 11:22:57.487718
+Replit-Commit-Author: Agent
+2025-Jul-16 11:22:57.487718
+Replit-Commit-Session-Id: 41f13ecd-33cb-43cd-86d5-ed9ef751eaf0
+2025-Jul-16 11:22:57.487718
+Replit-Commit-Screenshot-Url: https://storage.googleapis.com/screenshot-production-us-central1/6ede67ac-3870-40e6-9701-928106f20b27/41f13ecd-33cb-43cd-86d5-ed9ef751eaf0/okNXRHq
+2025-Jul-16 11:22:57.583753
+Image not found (nc0g0sws8wcg0sco8co0cocs:c0cb21d802800b747c13444f156bb394c6eb5475). Building new image.
+2025-Jul-16 11:22:58.230811
+[CMD]: docker exec lccow0o4ccsw84g0kcg8c408 bash -c 'cat /artifacts/lccow0o4ccsw84g0kcg8c408/Dockerfile'
+2025-Jul-16 11:22:58.230811
+# Dockerfile pour ASSURMINUT CRM
+2025-Jul-16 11:22:58.230811
+FROM node:18-alpine
+2025-Jul-16 11:22:58.230811
+2025-Jul-16 11:22:58.230811
+WORKDIR /app
+2025-Jul-16 11:22:58.230811
+2025-Jul-16 11:22:58.230811
+# Installer les dépendances système
+2025-Jul-16 11:22:58.230811
+RUN apk add --no-cache python3 make g++ postgresql-client curl
+2025-Jul-16 11:22:58.230811
+2025-Jul-16 11:22:58.230811
+# Copier package.json et package-lock.json
+2025-Jul-16 11:22:58.230811
+COPY package*.json ./
+2025-Jul-16 11:22:58.230811
+2025-Jul-16 11:22:58.230811
+# Installer toutes les dépendances
+2025-Jul-16 11:22:58.230811
+RUN npm ci
+2025-Jul-16 11:22:58.230811
+2025-Jul-16 11:22:58.230811
+# Copier le code source
+2025-Jul-16 11:22:58.230811
+COPY . .
+2025-Jul-16 11:22:58.230811
+2025-Jul-16 11:22:58.230811
+# Créer les dossiers nécessaires
+2025-Jul-16 11:22:58.230811
+RUN mkdir -p uploads dist
+2025-Jul-16 11:22:58.230811
+2025-Jul-16 11:22:58.230811
+# Build l'application
+2025-Jul-16 11:22:58.230811
+RUN npm run build
+2025-Jul-16 11:22:58.230811
+2025-Jul-16 11:22:58.230811
+# Vérifier que le build a réussi
+2025-Jul-16 11:22:58.230811
+RUN ls -la dist/
+2025-Jul-16 11:22:58.230811
+2025-Jul-16 11:22:58.230811
+# Exposer le port
+2025-Jul-16 11:22:58.230811
+EXPOSE 5000
+2025-Jul-16 11:22:58.230811
+2025-Jul-16 11:22:58.230811
+# Variables d'environnement
+2025-Jul-16 11:22:58.230811
+ENV NODE_ENV=production
+2025-Jul-16 11:22:58.230811
+ENV PORT=5000
+2025-Jul-16 11:22:58.230811
+2025-Jul-16 11:22:58.230811
+# Health check
+2025-Jul-16 11:22:58.230811
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+2025-Jul-16 11:22:58.230811
+CMD curl -f http://localhost:5000/health || exit 1
+2025-Jul-16 11:22:58.230811
+2025-Jul-16 11:22:58.230811
+# Démarrer l'application avec le script de production
+2025-Jul-16 11:22:58.230811
+CMD ["node", "start-production.js"]
+2025-Jul-16 11:22:58.549894
+[CMD]: docker exec lccow0o4ccsw84g0kcg8c408 bash -c 'cat /artifacts/lccow0o4ccsw84g0kcg8c408/Dockerfile'
+2025-Jul-16 11:22:58.549894
+# Dockerfile pour ASSURMINUT CRM
+2025-Jul-16 11:22:58.549894
+FROM node:18-alpine
+2025-Jul-16 11:22:58.549894
+2025-Jul-16 11:22:58.549894
+WORKDIR /app
+2025-Jul-16 11:22:58.549894
+2025-Jul-16 11:22:58.549894
+# Installer les dépendances système
+2025-Jul-16 11:22:58.549894
+RUN apk add --no-cache python3 make g++ postgresql-client curl
+2025-Jul-16 11:22:58.549894
+2025-Jul-16 11:22:58.549894
+# Copier package.json et package-lock.json
+2025-Jul-16 11:22:58.549894
+COPY package*.json ./
+2025-Jul-16 11:22:58.549894
+2025-Jul-16 11:22:58.549894
+# Installer toutes les dépendances
+2025-Jul-16 11:22:58.549894
+RUN npm ci
+2025-Jul-16 11:22:58.549894
+2025-Jul-16 11:22:58.549894
+# Copier le code source
+2025-Jul-16 11:22:58.549894
+COPY . .
+2025-Jul-16 11:22:58.549894
+2025-Jul-16 11:22:58.549894
+# Créer les dossiers nécessaires
+2025-Jul-16 11:22:58.549894
+RUN mkdir -p uploads dist
+2025-Jul-16 11:22:58.549894
+2025-Jul-16 11:22:58.549894
+# Build l'application
+2025-Jul-16 11:22:58.549894
+RUN npm run build
+2025-Jul-16 11:22:58.549894
+2025-Jul-16 11:22:58.549894
+# Vérifier que le build a réussi
+2025-Jul-16 11:22:58.549894
+RUN ls -la dist/
+2025-Jul-16 11:22:58.549894
+2025-Jul-16 11:22:58.549894
+# Exposer le port
+2025-Jul-16 11:22:58.549894
+EXPOSE 5000
+2025-Jul-16 11:22:58.549894
+2025-Jul-16 11:22:58.549894
+# Variables d'environnement
+2025-Jul-16 11:22:58.549894
+ENV NODE_ENV=production
+2025-Jul-16 11:22:58.549894
+ENV PORT=5000
+2025-Jul-16 11:22:58.549894
+2025-Jul-16 11:22:58.549894
+# Health check
+2025-Jul-16 11:22:58.549894
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+2025-Jul-16 11:22:58.549894
+CMD curl -f http://localhost:5000/health || exit 1
+2025-Jul-16 11:22:58.549894
+2025-Jul-16 11:22:58.549894
+# Démarrer l'application avec le script de production
+2025-Jul-16 11:22:58.549894
+CMD ["node", "start-production.js"]
+2025-Jul-16 11:22:58.685410
+----------------------------------------
+2025-Jul-16 11:22:58.687626
+Building docker image started.
+2025-Jul-16 11:22:58.689275
+To check the current progress, click on Show Debug Logs.
+2025-Jul-16 11:22:58.971323
+[CMD]: docker exec lccow0o4ccsw84g0kcg8c408 bash -c 'cat /artifacts/build.sh'
+2025-Jul-16 11:22:58.971323
+docker build  --add-host coolify:10.0.1.5 --add-host coolify-db:10.0.1.2 --add-host coolify-realtime:10.0.1.3 --add-host coolify-redis:10.0.1.4 --network host -f /artifacts/lccow0o4ccsw84g0kcg8c408/Dockerfile --build-arg SOURCE_COMMIT='c0cb21d802800b747c13444f156bb394c6eb5475' --build-arg 'COOLIFY_URL=http://nc0g0sws8wcg0sco8co0cocs.31.97.197.34.sslip.io' --build-arg 'COOLIFY_FQDN=nc0g0sws8wcg0sco8co0cocs.31.97.197.34.sslip.io' --build-arg 'COOLIFY_BRANCH=main' --build-arg 'COOLIFY_RESOURCE_UUID=nc0g0sws8wcg0sco8co0cocs' --build-arg 'COOLIFY_CONTAINER_NAME=nc0g0sws8wcg0sco8co0cocs-112252633017' --progress plain -t nc0g0sws8wcg0sco8co0cocs:c0cb21d802800b747c13444f156bb394c6eb5475 /artifacts/lccow0o4ccsw84g0kcg8c408
+2025-Jul-16 11:22:59.620416
+[CMD]: docker exec lccow0o4ccsw84g0kcg8c408 bash -c 'bash /artifacts/build.sh'
+2025-Jul-16 11:22:59.620416
+#0 building with "default" instance using docker driver
+2025-Jul-16 11:22:59.620416
+2025-Jul-16 11:22:59.620416
+#1 [internal] load build definition from Dockerfile
+2025-Jul-16 11:22:59.620416
+#1 transferring dockerfile: 843B done
+2025-Jul-16 11:22:59.620416
+#1 DONE 0.0s
+2025-Jul-16 11:22:59.620416
+2025-Jul-16 11:22:59.620416
+#2 [internal] load metadata for docker.io/library/node:18-alpine
+2025-Jul-16 11:23:00.197868
+#2 DONE 0.7s
+2025-Jul-16 11:23:00.306894
+#3 [internal] load .dockerignore
+2025-Jul-16 11:23:00.306894
+#3 transferring context: 176B done
+2025-Jul-16 11:23:00.306894
+#3 DONE 0.0s
+2025-Jul-16 11:23:00.306894
+2025-Jul-16 11:23:00.306894
+#4 [1/9] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+2025-Jul-16 11:23:00.306894
+#4 CACHED
+2025-Jul-16 11:23:00.306894
+2025-Jul-16 11:23:00.306894
+#5 [2/9] WORKDIR /app
+2025-Jul-16 11:23:00.306894
+#5 DONE 0.0s
+2025-Jul-16 11:23:00.306894
+2025-Jul-16 11:23:00.306894
+#6 [internal] load build context
+2025-Jul-16 11:23:00.306894
+#6 transferring context: 1.38MB 0.1s done
+2025-Jul-16 11:23:00.519639
+#6 DONE 0.1s
+2025-Jul-16 11:23:00.519639
+2025-Jul-16 11:23:00.519639
+#7 [3/9] RUN apk add --no-cache python3 make g++ postgresql-client curl
+2025-Jul-16 11:23:00.519639
+#7 0.152 fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/main/x86_64/APKINDEX.tar.gz
+2025-Jul-16 11:23:00.519639
+#7 0.265 fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/community/x86_64/APKINDEX.tar.gz
+2025-Jul-16 11:23:00.955794
+#7 0.703 (1/41) Installing brotli-libs (1.1.0-r2)
+2025-Jul-16 11:23:01.197146
+#7 0.718 (2/41) Installing c-ares (1.34.5-r0)
+2025-Jul-16 11:23:01.197146
+#7 0.724 (3/41) Installing libunistring (1.2-r0)
+2025-Jul-16 11:23:01.197146
+#7 0.741 (4/41) Installing libidn2 (2.3.7-r0)
+2025-Jul-16 11:23:01.197146
+#7 0.747 (5/41) Installing nghttp2-libs (1.64.0-r0)
+2025-Jul-16 11:23:01.197146
+#7 0.751 (6/41) Installing libpsl (0.21.5-r3)
+2025-Jul-16 11:23:01.197146
+#7 0.758 (7/41) Installing zstd-libs (1.5.6-r2)
+2025-Jul-16 11:23:01.197146
+#7 0.772 (8/41) Installing libcurl (8.12.1-r1)
+2025-Jul-16 11:23:01.197146
+#7 0.784 (9/41) Installing curl (8.12.1-r1)
+2025-Jul-16 11:23:01.197146
+#7 0.794 (10/41) Installing libstdc++-dev (14.2.0-r4)
+2025-Jul-16 11:23:01.248036
+#7 0.995 (11/41) Installing jansson (2.14-r4)
+2025-Jul-16 11:23:01.355311
+#7 1.000 (12/41) Installing binutils (2.43.1-r3)
+2025-Jul-16 11:23:01.357473
+#7 1.062 (13/41) Installing libgomp (14.2.0-r4)
+2025-Jul-16 11:23:01.357473
+#7 1.069 (14/41) Installing libatomic (14.2.0-r4)
+2025-Jul-16 11:23:01.357473
+#7 1.072 (15/41) Installing gmp (6.3.0-r2)
+2025-Jul-16 11:23:01.357473
+#7 1.079 (16/41) Installing isl26 (0.26-r1)
+2025-Jul-16 11:23:01.357473
+#7 1.095 (17/41) Installing mpfr4 (4.2.1-r0)
+2025-Jul-16 11:23:01.357473
+#7 1.103 (18/41) Installing mpc1 (1.3.1-r1)
+2025-Jul-16 11:23:01.510947
+#7 1.107 (19/41) Installing gcc (14.2.0-r4)
+2025-Jul-16 11:23:02.157144
+#7 1.904 (20/41) Installing musl-dev (1.2.5-r9)
+2025-Jul-16 11:23:02.159634
+2025-Jul-16 11:23:02.365140
+#7 1.962 (21/41) Installing g++ (14.2.0-r4)
+2025-Jul-16 11:23:02.368488
+2025-Jul-16 11:23:02.453018
+#7 2.200 (22/41) Installing make (4.4.1-r2)
+2025-Jul-16 11:23:02.566180
+#7 2.205 (23/41) Installing postgresql-common (1.2-r1)
+2025-Jul-16 11:23:02.568364
+#7 2.208 Executing postgresql-common-1.2-r1.pre-install
+2025-Jul-16 11:23:02.568364
+#7 2.219 (24/41) Installing lz4-libs (1.10.0-r0)
+2025-Jul-16 11:23:02.568364
+#7 2.224 (25/41) Installing libpq (17.5-r0)
+2025-Jul-16 11:23:02.568364
+#7 2.230 (26/41) Installing ncurses-terminfo-base (6.5_p20241006-r3)
+2025-Jul-16 11:23:02.568364
+#7 2.235 (27/41) Installing libncursesw (6.5_p20241006-r3)
+2025-Jul-16 11:23:02.568364
+#7 2.240 (28/41) Installing readline (8.2.13-r0)
+2025-Jul-16 11:23:02.568364
+#7 2.245 (29/41) Installing postgresql17-client (17.5-r0)
+2025-Jul-16 11:23:02.568364
+#7 2.269 (30/41) Installing libbz2 (1.0.8-r6)
+2025-Jul-16 11:23:02.568364
+#7 2.273 (31/41) Installing libexpat (2.7.0-r0)
+2025-Jul-16 11:23:02.568364
+#7 2.278 (32/41) Installing libffi (3.4.7-r0)
+2025-Jul-16 11:23:02.568364
+#7 2.281 (33/41) Installing gdbm (1.24-r0)
+2025-Jul-16 11:23:02.568364
+#7 2.284 (34/41) Installing xz-libs (5.6.3-r1)
+2025-Jul-16 11:23:02.568364
+#7 2.290 (35/41) Installing mpdecimal (4.0.0-r0)
+2025-Jul-16 11:23:02.568364
+#7 2.295 (36/41) Installing libpanelw (6.5_p20241006-r3)
+2025-Jul-16 11:23:02.568364
+#7 2.298 (37/41) Installing sqlite-libs (3.48.0-r2)
+2025-Jul-16 11:23:02.568364
+#7 2.313 (38/41) Installing python3 (3.12.11-r0)
+2025-Jul-16 11:23:02.734564
+#7 2.482 (39/41) Installing python3-pycache-pyc0 (3.12.11-r0)
+2025-Jul-16 11:23:02.847269
+#7 2.594 (40/41) Installing pyc (3.12.11-r0)
+2025-Jul-16 11:23:03.090522
+#7 2.595 (41/41) Installing python3-pyc (3.12.11-r0)
+2025-Jul-16 11:23:03.090522
+#7 2.597 Executing busybox-1.37.0-r12.trigger
+2025-Jul-16 11:23:03.090522
+#7 2.603 Executing postgresql-common-1.2-r1.trigger
+2025-Jul-16 11:23:03.090522
+#7 2.606 * Setting postgresql17 as the default version
+2025-Jul-16 11:23:03.090522
+#7 2.677 WARNING: opening from cache https://dl-cdn.alpinelinux.org/alpine/v3.21/main: No such file or directory
+2025-Jul-16 11:23:03.090522
+#7 2.677 WARNING: opening from cache https://dl-cdn.alpinelinux.org/alpine/v3.21/community: No such file or directory
+2025-Jul-16 11:23:03.090522
+#7 2.683 OK: 277 MiB in 58 packages
+2025-Jul-16 11:23:03.141051
+#7 DONE 2.9s
+2025-Jul-16 11:23:03.339211
+2025-Jul-16 11:23:03.341363
+#8 [4/9] COPY package*.json ./
+2025-Jul-16 11:23:03.341363
+#8 DONE 0.0s
+2025-Jul-16 11:23:03.341363
+2025-Jul-16 11:23:03.341363
+#9 [5/9] RUN npm ci
+2025-Jul-16 11:23:08.814022
+#9 5.619 npm error code ERESOLVE
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error ERESOLVE could not resolve
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error While resolving: @vitejs/plugin-react@4.3.3
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error Found: vite@6.3.5
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error node_modules/vite
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error   dev vite@"^6.3.5" from the root project
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error   peer vite@"^5.2.0 || ^6" from @tailwindcss/vite@4.1.3
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error   node_modules/@tailwindcss/vite
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error     dev @tailwindcss/vite@"^4.1.3" from the root project
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error Could not resolve dependency:
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error peer vite@"^4.2.0 || ^5.0.0" from @vitejs/plugin-react@4.3.3
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error node_modules/@vitejs/plugin-react
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error   dev @vitejs/plugin-react@"^4.3.2" from the root project
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error Conflicting peer dependency: vite@5.4.19
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error node_modules/vite
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error   peer vite@"^4.2.0 || ^5.0.0" from @vitejs/plugin-react@4.3.3
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error   node_modules/@vitejs/plugin-react
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error     dev @vitejs/plugin-react@"^4.3.2" from the root project
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error Fix the upstream dependency conflict, or retry
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error this command with --force or --legacy-peer-deps
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error to accept an incorrect (and potentially broken) dependency resolution.
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error For a full report see:
+2025-Jul-16 11:23:08.920185
+#9 5.622 npm error /root/.npm/_logs/2025-07-16T11_23_03_586Z-eresolve-report.txt
+2025-Jul-16 11:23:08.920185
+#9 5.625 npm notice
+2025-Jul-16 11:23:08.920185
+#9 5.625 npm notice New major version of npm available! 10.8.2 -> 11.4.2
+2025-Jul-16 11:23:08.920185
+#9 5.625 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.4.2
+2025-Jul-16 11:23:08.920185
+#9 5.625 npm notice To update run: npm install -g npm@11.4.2
+2025-Jul-16 11:23:08.920185
+#9 5.625 npm notice
+2025-Jul-16 11:23:08.920185
+#9 5.626 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-07-16T11_23_03_586Z-debug-0.log
+2025-Jul-16 11:23:08.920185
+#9 ERROR: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
+2025-Jul-16 11:23:08.936857
+------
+2025-Jul-16 11:23:08.936857
+> [5/9] RUN npm ci:
+2025-Jul-16 11:23:08.936857
+5.622 npm error
+2025-Jul-16 11:23:08.936857
+5.622 npm error
+2025-Jul-16 11:23:08.936857
+5.622 npm error For a full report see:
+2025-Jul-16 11:23:08.936857
+5.622 npm error /root/.npm/_logs/2025-07-16T11_23_03_586Z-eresolve-report.txt
+2025-Jul-16 11:23:08.936857
+5.625 npm notice
+2025-Jul-16 11:23:08.936857
+5.625 npm notice New major version of npm available! 10.8.2 -> 11.4.2
+2025-Jul-16 11:23:08.936857
+5.625 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.4.2
+2025-Jul-16 11:23:08.936857
+5.625 npm notice To update run: npm install -g npm@11.4.2
+2025-Jul-16 11:23:08.936857
+5.625 npm notice
+2025-Jul-16 11:23:08.936857
+5.626 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-07-16T11_23_03_586Z-debug-0.log
+2025-Jul-16 11:23:08.936857
+------
+2025-Jul-16 11:23:08.948814
+Dockerfile:13
+2025-Jul-16 11:23:08.948814
+--------------------
+2025-Jul-16 11:23:08.948814
+11 |
+2025-Jul-16 11:23:08.948814
+12 |     # Installer toutes les dépendances
+2025-Jul-16 11:23:08.948814
+13 | >>> RUN npm ci
+2025-Jul-16 11:23:08.948814
+14 |
+2025-Jul-16 11:23:08.948814
+15 |     # Copier le code source
+2025-Jul-16 11:23:08.948814
+--------------------
+2025-Jul-16 11:23:08.948814
+ERROR: failed to solve: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
+2025-Jul-16 11:23:08.968258
+exit status 1
+2025-Jul-16 11:23:09.081423
+Oops something is not okay, are you okay? 😢
+2025-Jul-16 11:23:09.090720
+#0 building with "default" instance using docker driver
+2025-Jul-16 11:23:09.090720
+2025-Jul-16 11:23:09.090720
+#1 [internal] load build definition from Dockerfile
+2025-Jul-16 11:23:09.090720
+#1 transferring dockerfile: 843B done
+2025-Jul-16 11:23:09.090720
+#1 DONE 0.0s
+2025-Jul-16 11:23:09.090720
+2025-Jul-16 11:23:09.090720
+#2 [internal] load metadata for docker.io/library/node:18-alpine
+2025-Jul-16 11:23:09.090720
+#2 DONE 0.7s
+2025-Jul-16 11:23:09.090720
+2025-Jul-16 11:23:09.090720
+#3 [internal] load .dockerignore
+2025-Jul-16 11:23:09.090720
+#3 transferring context: 176B done
+2025-Jul-16 11:23:09.090720
+#3 DONE 0.0s
+2025-Jul-16 11:23:09.090720
+2025-Jul-16 11:23:09.090720
+#4 [1/9] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+2025-Jul-16 11:23:09.090720
+#4 CACHED
+2025-Jul-16 11:23:09.090720
+2025-Jul-16 11:23:09.090720
+#5 [2/9] WORKDIR /app
+2025-Jul-16 11:23:09.090720
+#5 DONE 0.0s
+2025-Jul-16 11:23:09.090720
+2025-Jul-16 11:23:09.090720
+#6 [internal] load build context
+2025-Jul-16 11:23:09.090720
+#6 transferring context: 1.38MB 0.1s done
+2025-Jul-16 11:23:09.090720
+#6 DONE 0.1s
+2025-Jul-16 11:23:09.090720
+2025-Jul-16 11:23:09.090720
+#7 [3/9] RUN apk add --no-cache python3 make g++ postgresql-client curl
+2025-Jul-16 11:23:09.090720
+#7 0.152 fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/main/x86_64/APKINDEX.tar.gz
+2025-Jul-16 11:23:09.090720
+#7 0.265 fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/community/x86_64/APKINDEX.tar.gz
+2025-Jul-16 11:23:09.090720
+#7 0.703 (1/41) Installing brotli-libs (1.1.0-r2)
+2025-Jul-16 11:23:09.090720
+#7 0.718 (2/41) Installing c-ares (1.34.5-r0)
+2025-Jul-16 11:23:09.090720
+#7 0.724 (3/41) Installing libunistring (1.2-r0)
+2025-Jul-16 11:23:09.090720
+#7 0.741 (4/41) Installing libidn2 (2.3.7-r0)
+2025-Jul-16 11:23:09.090720
+#7 0.747 (5/41) Installing nghttp2-libs (1.64.0-r0)
+2025-Jul-16 11:23:09.090720
+#7 0.751 (6/41) Installing libpsl (0.21.5-r3)
+2025-Jul-16 11:23:09.090720
+#7 0.758 (7/41) Installing zstd-libs (1.5.6-r2)
+2025-Jul-16 11:23:09.090720
+#7 0.772 (8/41) Installing libcurl (8.12.1-r1)
+2025-Jul-16 11:23:09.090720
+#7 0.784 (9/41) Installing curl (8.12.1-r1)
+2025-Jul-16 11:23:09.090720
+#7 0.794 (10/41) Installing libstdc++-dev (14.2.0-r4)
+2025-Jul-16 11:23:09.090720
+#7 0.995 (11/41) Installing jansson (2.14-r4)
+2025-Jul-16 11:23:09.090720
+#7 1.000 (12/41) Installing binutils (2.43.1-r3)
+2025-Jul-16 11:23:09.090720
+#7 1.062 (13/41) Installing libgomp (14.2.0-r4)
+2025-Jul-16 11:23:09.090720
+#7 1.069 (14/41) Installing libatomic (14.2.0-r4)
+2025-Jul-16 11:23:09.090720
+#7 1.072 (15/41) Installing gmp (6.3.0-r2)
+2025-Jul-16 11:23:09.090720
+#7 1.079 (16/41) Installing isl26 (0.26-r1)
+2025-Jul-16 11:23:09.090720
+#7 1.095 (17/41) Installing mpfr4 (4.2.1-r0)
+2025-Jul-16 11:23:09.090720
+#7 1.103 (18/41) Installing mpc1 (1.3.1-r1)
+2025-Jul-16 11:23:09.090720
+#7 1.107 (19/41) Installing gcc (14.2.0-r4)
+2025-Jul-16 11:23:09.090720
+#7 1.904 (20/41) Installing musl-dev (1.2.5-r9)
+2025-Jul-16 11:23:09.090720
+#7 1.962 (21/41) Installing g++ (14.2.0-r4)
+2025-Jul-16 11:23:09.090720
+#7 2.200 (22/41) Installing make (4.4.1-r2)
+2025-Jul-16 11:23:09.090720
+#7 2.205 (23/41) Installing postgresql-common (1.2-r1)
+2025-Jul-16 11:23:09.090720
+#7 2.208 Executing postgresql-common-1.2-r1.pre-install
+2025-Jul-16 11:23:09.090720
+#7 2.219 (24/41) Installing lz4-libs (1.10.0-r0)
+2025-Jul-16 11:23:09.090720
+#7 2.224 (25/41) Installing libpq (17.5-r0)
+2025-Jul-16 11:23:09.090720
+#7 2.230 (26/41) Installing ncurses-terminfo-base (6.5_p20241006-r3)
+2025-Jul-16 11:23:09.090720
+#7 2.235 (27/41) Installing libncursesw (6.5_p20241006-r3)
+2025-Jul-16 11:23:09.090720
+#7 2.240 (28/41) Installing readline (8.2.13-r0)
+2025-Jul-16 11:23:09.090720
+#7 2.245 (29/41) Installing postgresql17-client (17.5-r0)
+2025-Jul-16 11:23:09.090720
+#7 2.269 (30/41) Installing libbz2 (1.0.8-r6)
+2025-Jul-16 11:23:09.090720
+#7 2.273 (31/41) Installing libexpat (2.7.0-r0)
+2025-Jul-16 11:23:09.090720
+#7 2.278 (32/41) Installing libffi (3.4.7-r0)
+2025-Jul-16 11:23:09.090720
+#7 2.281 (33/41) Installing gdbm (1.24-r0)
+2025-Jul-16 11:23:09.090720
+#7 2.284 (34/41) Installing xz-libs (5.6.3-r1)
+2025-Jul-16 11:23:09.090720
+#7 2.290 (35/41) Installing mpdecimal (4.0.0-r0)
+2025-Jul-16 11:23:09.090720
+#7 2.295 (36/41) Installing libpanelw (6.5_p20241006-r3)
+2025-Jul-16 11:23:09.090720
+#7 2.298 (37/41) Installing sqlite-libs (3.48.0-r2)
+2025-Jul-16 11:23:09.090720
+#7 2.313 (38/41) Installing python3 (3.12.11-r0)
+2025-Jul-16 11:23:09.090720
+#7 2.482 (39/41) Installing python3-pycache-pyc0 (3.12.11-r0)
+2025-Jul-16 11:23:09.090720
+#7 2.594 (40/41) Installing pyc (3.12.11-r0)
+2025-Jul-16 11:23:09.090720
+#7 2.595 (41/41) Installing python3-pyc (3.12.11-r0)
+2025-Jul-16 11:23:09.090720
+#7 2.597 Executing busybox-1.37.0-r12.trigger
+2025-Jul-16 11:23:09.090720
+#7 2.603 Executing postgresql-common-1.2-r1.trigger
+2025-Jul-16 11:23:09.090720
+#7 2.606 * Setting postgresql17 as the default version
+2025-Jul-16 11:23:09.090720
+#7 2.677 WARNING: opening from cache https://dl-cdn.alpinelinux.org/alpine/v3.21/main: No such file or directory
+2025-Jul-16 11:23:09.090720
+#7 2.677 WARNING: opening from cache https://dl-cdn.alpinelinux.org/alpine/v3.21/community: No such file or directory
+2025-Jul-16 11:23:09.090720
+#7 2.683 OK: 277 MiB in 58 packages
+2025-Jul-16 11:23:09.090720
+#7 DONE 2.9s
+2025-Jul-16 11:23:09.090720
+2025-Jul-16 11:23:09.090720
+#8 [4/9] COPY package*.json ./
+2025-Jul-16 11:23:09.090720
+#8 DONE 0.0s
+2025-Jul-16 11:23:09.090720
+2025-Jul-16 11:23:09.090720
+#9 [5/9] RUN npm ci
+2025-Jul-16 11:23:09.090720
+#9 5.619 npm error code ERESOLVE
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error ERESOLVE could not resolve
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error While resolving: @vitejs/plugin-react@4.3.3
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error Found: vite@6.3.5
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error node_modules/vite
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error   dev vite@"^6.3.5" from the root project
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error   peer vite@"^5.2.0 || ^6" from @tailwindcss/vite@4.1.3
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error   node_modules/@tailwindcss/vite
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error     dev @tailwindcss/vite@"^4.1.3" from the root project
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error Could not resolve dependency:
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error peer vite@"^4.2.0 || ^5.0.0" from @vitejs/plugin-react@4.3.3
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error node_modules/@vitejs/plugin-react
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error   dev @vitejs/plugin-react@"^4.3.2" from the root project
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error Conflicting peer dependency: vite@5.4.19
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error node_modules/vite
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error   peer vite@"^4.2.0 || ^5.0.0" from @vitejs/plugin-react@4.3.3
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error   node_modules/@vitejs/plugin-react
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error     dev @vitejs/plugin-react@"^4.3.2" from the root project
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error Fix the upstream dependency conflict, or retry
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error this command with --force or --legacy-peer-deps
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error to accept an incorrect (and potentially broken) dependency resolution.
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error For a full report see:
+2025-Jul-16 11:23:09.090720
+#9 5.622 npm error /root/.npm/_logs/2025-07-16T11_23_03_586Z-eresolve-report.txt
+2025-Jul-16 11:23:09.090720
+#9 5.625 npm notice
+2025-Jul-16 11:23:09.090720
+#9 5.625 npm notice New major version of npm available! 10.8.2 -> 11.4.2
+2025-Jul-16 11:23:09.090720
+#9 5.625 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.4.2
+2025-Jul-16 11:23:09.090720
+#9 5.625 npm notice To update run: npm install -g npm@11.4.2
+2025-Jul-16 11:23:09.090720
+#9 5.625 npm notice
+2025-Jul-16 11:23:09.090720
+#9 5.626 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-07-16T11_23_03_586Z-debug-0.log
+2025-Jul-16 11:23:09.090720
+#9 ERROR: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
+2025-Jul-16 11:23:09.090720
+------
+2025-Jul-16 11:23:09.090720
+> [5/9] RUN npm ci:
+2025-Jul-16 11:23:09.090720
+5.622 npm error
+2025-Jul-16 11:23:09.090720
+5.622 npm error
+2025-Jul-16 11:23:09.090720
+5.622 npm error For a full report see:
+2025-Jul-16 11:23:09.090720
+5.622 npm error /root/.npm/_logs/2025-07-16T11_23_03_586Z-eresolve-report.txt
+2025-Jul-16 11:23:09.090720
+5.625 npm notice
+2025-Jul-16 11:23:09.090720
+5.625 npm notice New major version of npm available! 10.8.2 -> 11.4.2
+2025-Jul-16 11:23:09.090720
+5.625 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.4.2
+2025-Jul-16 11:23:09.090720
+5.625 npm notice To update run: npm install -g npm@11.4.2
+2025-Jul-16 11:23:09.090720
+5.625 npm notice
+2025-Jul-16 11:23:09.090720
+5.626 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-07-16T11_23_03_586Z-debug-0.log
+2025-Jul-16 11:23:09.090720
+------
+2025-Jul-16 11:23:09.090720
+Dockerfile:13
+2025-Jul-16 11:23:09.090720
+--------------------
+2025-Jul-16 11:23:09.090720
+11 |
+2025-Jul-16 11:23:09.090720
+12 |     # Installer toutes les dépendances
+2025-Jul-16 11:23:09.090720
+13 | >>> RUN npm ci
+2025-Jul-16 11:23:09.090720
+14 |
+2025-Jul-16 11:23:09.090720
+15 |     # Copier le code source
+2025-Jul-16 11:23:09.090720
+--------------------
+2025-Jul-16 11:23:09.090720
+ERROR: failed to solve: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
+2025-Jul-16 11:23:09.090720
+exit status 1
+2025-Jul-16 11:23:09.098190
+Deployment failed. Removing the new version of your application.
+2025-Jul-16 11:23:09.647170
+Gracefully shutting down build container: lccow0o4ccsw84g0kcg8c408
+2025-Jul-16 11:23:09.847551
+[CMD]: docker stop --time=30 lccow0o4ccsw84g0kcg8c408
+2025-Jul-16 11:23:09.847551
+lccow0o4ccsw84g0kcg8c408
+2025-Jul-16 11:23:10.049391
+[CMD]: docker rm -f lccow0o4ccsw84g0kcg8c408
+2025-Jul-16 11:23:10.049391
+Error response from daemon: No such container: lccow0o4ccsw84g0kcg8c408

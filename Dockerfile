@@ -9,8 +9,8 @@ RUN apk add --no-cache python3 make g++ postgresql-client curl
 # Copier package.json et package-lock.json
 COPY package*.json ./
 
-# Installer toutes les dépendances
-RUN npm ci
+# Installer toutes les dépendances avec legacy-peer-deps pour résoudre les conflits
+RUN npm ci --legacy-peer-deps
 
 # Copier le code source
 COPY . .
