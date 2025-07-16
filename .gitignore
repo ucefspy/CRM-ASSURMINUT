@@ -4,3 +4,11 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+tmp.json
+cookies.txt
+attached_assets/
+*.log
+.npm
+.cache
+coverage/
+.nyc_output/
