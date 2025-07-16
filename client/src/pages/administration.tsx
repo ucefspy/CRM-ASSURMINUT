@@ -255,10 +255,22 @@ export default function AdministrationPage() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Créer un nouveau compte</CardTitle>
+            <p className="text-sm text-gray-500">
+              Rôle actuel : {currentUser?.role || 'non défini'} | Peut créer : {canCreateUser ? 'Oui' : 'Non'}
+            </p>
           </CardHeader>
           <CardContent>
+            <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-semibold text-blue-800">Debug Info:</h4>
+              <p className="text-sm text-blue-700">
+                currentUser: {JSON.stringify(currentUser)}<br />
+                canCreateUser: {canCreateUser.toString()}<br />
+                currentUser?.role === 'admin': {(currentUser?.role === 'admin').toString()}
+              </p>
+            </div>
+            
             <Tabs defaultValue="agent" className="w-full">
-              <TabsList className={`grid w-full ${currentUser?.role === 'admin' ? 'grid-cols-3' : 'grid-cols-1'}`}>
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="agent" className="flex items-center gap-2">
                   <UserCheck className="h-4 w-4" />
                   Agent
