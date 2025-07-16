@@ -107,6 +107,9 @@ Preferred communication style: Simple, everyday language.
 3. `npm run db:push`: Applies database schema changes
 
 ### Recent Changes
+- **2025-07-16**: Fixed Supabase database connection issue - Replit's DATABASE_URL environment variable was overriding .env file, causing app to connect to wrong database
+- **2025-07-16**: Implemented comprehensive notifications system with real-time data from rappels and clients
+- **2025-07-16**: Updated database connection logic to force use of Supabase URL from .env file
 - **2025-01-16**: Updated @vitejs/plugin-react from 4.3.2 to 4.6.0 to resolve dependency conflict with vite 6.3.5 during deployment
 - **2025-01-16**: Fixed Replit deployment by creating missing server/routes.js and server/db.js files
 - **2025-01-16**: Fixed admin login issues by disabling secure cookies in session configuration for Replit compatibility
