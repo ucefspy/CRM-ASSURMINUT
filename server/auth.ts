@@ -4,7 +4,7 @@ import type { User, LoginData } from "@shared/schema";
 
 // Cache simple pour éviter les requêtes répétées à la base de données
 const userCache = new Map<string, { user: User; timestamp: number }>();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes - cache plus long
 
 export class AuthService {
   async hashPassword(password: string): Promise<string> {
@@ -27,26 +27,37 @@ export class AuthService {
 
     console.log('Authentification via base de données pour:', loginData.username);
     
-    const user = await storage.getUserByUsername(loginData.username);
-    
-    if (!user || !user.actif) {
+    try {
+      // Ajouter un timeout pour éviter les attentes trop longues
+      const user = await Promise.race([
+        storage.getUserByUsername(loginData.username),
+        new Promise<null>((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout authentification')), 8000)
+        )
+      ]);
+      
+      if (!user || !user.actif) {
+        return null;
+      }
+
+      const isValid = await this.verifyPassword(loginData.password, user.password);
+      
+      if (!isValid) {
+        return null;
+      }
+
+      // Retourner l'utilisateur sans le mot de passe
+      const { password, ...userWithoutPassword } = user;
+      const authenticatedUser = userWithoutPassword as User;
+      
+      // Mettre en cache le résultat
+      userCache.set(cacheKey, { user: authenticatedUser, timestamp: Date.now() });
+      
+      return authenticatedUser;
+    } catch (error) {
+      console.error('Erreur authentification:', error.message);
       return null;
     }
-
-    const isValid = await this.verifyPassword(loginData.password, user.password);
-    
-    if (!isValid) {
-      return null;
-    }
-
-    // Retourner l'utilisateur sans le mot de passe
-    const { password, ...userWithoutPassword } = user;
-    const authenticatedUser = userWithoutPassword as User;
-    
-    // Mettre en cache le résultat
-    userCache.set(cacheKey, { user: authenticatedUser, timestamp: Date.now() });
-    
-    return authenticatedUser;
   }
 
   async createUser(userData: { username: string; email: string; password: string; nom: string; prenom: string; role?: string }): Promise<User> {
